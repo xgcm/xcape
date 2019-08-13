@@ -27,13 +27,13 @@ before_install:
 
 install:
   - conda env create -f $CONDA_ENV
-  - source activate xhistogram_test_env
+  - source activate xcape_test_env
   - pip install -e .
 
 script:
   - if [ $DOCTEST == 'true' ];
     then cd doc; make html;
-    else py.test -v --cov=xhistogram --cov-config .coveragerc --cov-report term-missing;
+    else py.test -v --cov=xcape --cov-config .coveragerc --cov-report term-missing;
     fi
 
 after_success:
