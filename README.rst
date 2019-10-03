@@ -25,3 +25,10 @@ For more information, including installation instructions, read the full
 .. |license| image:: https://img.shields.io/github/license/mashape/apistatus.svg
    :target: https://github.com/xgcm/xcape
    :alt: license
+
+
+Compiling Fortran Code
+======================
+
+ f2py  -c ALLCAPELOOP.pyf ALLcapecalcLOOP.f90
+
