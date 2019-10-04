@@ -1,7 +1,9 @@
 !-----------------------------------------------------------------------
 !ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
 !-----------------------------------------------------------------------
-    subroutine loopcape(p3d_in , t3d_in , td3d_in, pinc, source, ml_depth, adiabat, nk, n2, cape3d , cin3d, z_out3d, MUlvl3d)
+    subroutine loopcape(p3d_in , t3d_in , td3d_in, ps_in , ts_in , tds_in, &
+                        &pinc, source, ml_depth, adiabat, type_grid, nk, n2, &
+                        &cape3d, cin3d, z_out3d, MUlvl3d)
 !-----------------------------------------------------------------------
 !  loopcape - loop along n2 dimension to calculate Convective Available
 !            Potential Energy (CAPE) from a sounding.
@@ -31,6 +33,12 @@
               ! 2 = reversible, liquid only
               ! 3 = pseudoadiabatic, with ice
               ! 4 = reversible, with ice
+
+! type_grid   ! type of vertical grid
+              ! 1 = model level grid - uses all values in 3d files
+              ! 2 = fixed pressure level grid
+              !                 - p3d_in is 1d
+              !                 - values below ps height needs to be deleted
 !-----------------------------------------------------------------------
 
     implicit none
@@ -41,17 +49,48 @@
     integer, intent(in) :: nk,n2
     integer :: i,j
     real, dimension(nk,n2), intent(in) :: p3d_in , t3d_in , td3d_in
+    real, dimension(n2), intent(in) :: ps_in , ts_in , tds_in
     real, dimension(n2), intent(out) :: cape3d,cin3d,z_out3d
     integer, dimension(n2), intent(out) :: MUlvl3d
     real, intent(in) :: pinc ! Pressure increment (Pa) for interpolation
     integer, intent(in) :: source ! Source parcel
     real, intent(in) :: ml_depth ! depth (m) of mixed layer,for source=3
     integer, intent(in) :: adiabat   ! Formulation of moist adiabat:
+    integer, intent(in) :: type_grid   ! Formulation of moist adiabat:
+    real, dimension(nk+1,n2) :: pall_in , tall_in , tdall_in
+    integer :: nk_all
+
+    IF (type_grid.EQ.1) THEN
+      pall_in(1,:) = ps_in
+      tall_in(1,:) = ts_in
+      tdall_in(1,:) = tds_in
+      pall_in(2:nk+1,:) = p3d_in(1:nk,:)
+      tall_in(2:nk+1,:) = t3d_in(1:nk,:)
+      tdall_in(2:nk+1,:) = td3d_in(1:nk,:)
+      nk_all = nk+1
+
+    ELSEIF (type_grid.EQ.2) THEN
+      ! write in
+    ENDIF
 
     do i = 1, n2
-      IF(t3d_in(1,i).gt.0.0)THEN
-        call getcape(p3d_in(:,i) , t3d_in(:,i) , td3d_in(:,i), &
-        &pinc, source, ml_depth, adiabat, nk, &
+      IF(ts_in(i).gt.0.0)THEN
+
+        ! IF (type_grid.EQ.1) THEN
+        !
+        !   pall_in(1) = ps_in(i)
+        !   tall_in(1) = ts_in(i)
+        !   tdall_in(1) = tds_in(i)
+        !   pall_in(2:nk+1) = p3d_in(1:nk,i)
+        !   tall_in(2:nk+1) = t3d_in(1:nk,i)
+        !   tdall_in(2:nk+1) = td3d_in(1:nk,i)
+        !
+        ! ELSEIF (type_grid.EQ.2) THEN
+        !   ! write in
+        ! ENDIF
+
+        call getcape(pall_in(:,i) , tall_in(:,i) , tdall_in(:,i), &
+        &pinc, source, ml_depth, adiabat, nk_all, &
         &cape3d(i) , cin3d(i), z_out3d(i), MUlvl3d(i))
       ELSE
         cape3d(i) = 0.0

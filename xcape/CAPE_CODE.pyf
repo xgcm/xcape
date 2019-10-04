@@ -1,17 +1,21 @@
 !    -*- f90 -*-
 ! Note: the context of this file is case sensitive.
 
-python module ALLCAPELOOP ! in 
-    interface  ! in :ALLCAPELOOP
-        subroutine loopcape(p3d_in,t3d_in,td3d_in,pinc,source,ml_depth,adiabat,nk,n2,cape3d,cin3d,z_out3d,mulvl3d) ! in :ALLCAPELOOP:ALLcapecalcLOOP.f90
+python module CAPE_CODE ! in 
+    interface  ! in :CAPE_CODE
+        subroutine loopcape(p3d_in,t3d_in,td3d_in,ps_in,ts_in,tds_in,pinc,source,ml_depth,adiabat,type_grid,nk,n2,cape3d,cin3d,z_out3d,mulvl3d) ! in :CAPE_CODE:CAPE_CODE.f90
             threadsafe 
             real dimension(nk,n2),intent(in) :: p3d_in
             real dimension(nk,n2),intent(in),depend(nk,n2) :: t3d_in
             real dimension(nk,n2),intent(in),depend(nk,n2) :: td3d_in
+            real dimension(n2),intent(in),depend(n2) :: ps_in
+            real dimension(n2),intent(in),depend(n2) :: ts_in
+            real dimension(n2),intent(in),depend(n2) :: tds_in
             real intent(in) :: pinc
             integer intent(in) :: source
             real intent(in) :: ml_depth
             integer intent(in) :: adiabat
+            integer intent(in) :: type_grid
             integer, optional,intent(in),check(shape(p3d_in,0)==nk),depend(p3d_in) :: nk=shape(p3d_in,0)
             integer, optional,intent(in),check(shape(p3d_in,1)==n2),depend(p3d_in) :: n2=shape(p3d_in,1)
             real dimension(n2),intent(out),depend(n2) :: cape3d
@@ -19,7 +23,7 @@ python module ALLCAPELOOP ! in
             real dimension(n2),intent(out),depend(n2) :: z_out3d
             integer dimension(n2),intent(out),depend(n2) :: mulvl3d
         end subroutine loopcape
-        subroutine getcape(p_in,t_in,td_in,pinc,source,ml_depth,adiabat,nk,cape,cin,mulvl,z_out) ! in :ALLCAPELOOP:ALLcapecalcLOOP.f90
+        subroutine getcape(p_in,t_in,td_in,pinc,source,ml_depth,adiabat,nk,cape,cin,mulvl,z_out) ! in :CAPE_CODE:CAPE_CODE.f90
             real dimension(nk),intent(in) :: p_in
             real dimension(nk),intent(in),depend(nk) :: t_in
             real dimension(nk),intent(in),depend(nk) :: td_in
@@ -33,17 +37,17 @@ python module ALLCAPELOOP ! in
             integer intent(out) :: mulvl
             real intent(out) :: z_out
         end subroutine getcape
-        function getqvs(p,t) ! in :ALLCAPELOOP:ALLcapecalcLOOP.f90
+        function getqvs(p,t) ! in :CAPE_CODE:CAPE_CODE.f90
             real :: p
             real :: t
             real :: getqvs
         end function getqvs
-        function getqvi(p,t) ! in :ALLCAPELOOP:ALLcapecalcLOOP.f90
+        function getqvi(p,t) ! in :CAPE_CODE:CAPE_CODE.f90
             real :: p
             real :: t
             real :: getqvi
         end function getqvi
-        function getthe(p,t,td,q) ! in :ALLCAPELOOP:ALLcapecalcLOOP.f90
+        function getthe(p,t,td,q) ! in :CAPE_CODE:CAPE_CODE.f90
             real :: p
             real :: t
             real :: td
@@ -51,7 +55,7 @@ python module ALLCAPELOOP ! in
             real :: getthe
         end function getthe
     end interface 
-end python module ALLCAPELOOP
+end python module CAPE_CODE
 
 ! This file was auto-generated with f2py (version:2).
 ! See http://cens.ioc.ee/projects/f2py2e/
