@@ -17,21 +17,37 @@ def p_t_td_1d(nlevs=20):
 
 @pytest.fixture(scope='module')
 def p_t_td_3d(nlevs=20, nx=10, ny=5):
-    p = np.random.rand(ny, nx, nlevs)
-    t = np.random.rand(ny, nx, nlevs)
-    td = np.random.rand(ny, nx, nlevs)
+    p = np.random.rand(nlevs, ny, nx)
+    t = np.random.rand(nlevs, ny, nx)
+    td = np.random.rand(nlevs, ny, nx)
     return p, t, td
+
+@pytest.fixture(scope='module')
+def p_t_td_surface(nx=10, ny=5):
+    ps = np.random.rand(ny, nx)
+    ts = np.random.rand(ny, nx)
+    tds = np.random.rand(ny, nx)
+    return ps, ts, tds
 
 # just see that the function can be called without an error and
 # returns the correct shaped object
-def test_calc_cape_shape_1d(p_t_td_1d):
-    p, t, td = p_t_td_1d
-    cape, cin = calc_cape(p, t, td, method='dummy')
-    assert cape.shape == (1,)
-    assert cin.shape == (1,)
+# def test_calc_cape_shape_1d(p_t_td_1d):
+#     p, t, td = p_t_td_1d
+#     cape, cin = calc_cape(p, t, td, method='dummy')
+#     assert cape.shape == (1,)
+#     assert cin.shape == (1,)
 
-def test_calc_cape_shape_3d(p_t_td_3d):
+def test_calc_cape_shape_3d(p_t_td_3d, p_t_td_surface):
     p, t, td = p_t_td_3d
-    cape, cin = calc_cape(p, t, td, method='dummy')
-    assert cape.shape == (p.shape[0], p.shape[1], 1)
-    assert cin.shape == (p.shape[0], p.shape[1], 1)
+    ps, ts, tds = p_t_td_surface
+    sourcein = 'surface'
+    cape, cin = calc_cape(p, t, td, ps, ts, tds, source=sourcein, method='dummy')
+    assert cape.shape == (1, p.shape[1], p.shape[2])
+    assert cin.shape == (1, p.shape[1], p.shape[2])
+    
+    sourcein = 'most-unstable'
+    cape, cin, mulev, zmulev = calc_cape(p, t, td, ps, ts, tds, source=sourcein, method='dummy')
+    assert cape.shape == (1, p.shape[1], p.shape[2])
+    assert cin.shape == (1, p.shape[1], p.shape[2])
+    assert mulev.shape == (1, p.shape[1], p.shape[2])
+    assert zmulev.shape == (1, p.shape[1], p.shape[2])

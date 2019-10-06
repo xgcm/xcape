@@ -62,13 +62,17 @@ def _reshape_surface_outputs(*args, shape=None):
     return [np.reshape(a, target_shape) for a in args]
 
 
-def _cape_dummy(p, t, td, **kwargs):
-    # cape is a reduction along the first axis.
+def _cape_dummy(p, t, td, ps, ts, tds, source, ml_depth, adiabat, pinc, type_grid):
+    # cape is a reduction along the second axis.
+    # this tests that reshaping works.
+    # calc_cape needs input in shape (nlevs, npoints)
     assert p.ndim == 2
     shape = p.shape
-    cape = np.ones((shape[0], 1))
-    cin = np.ones((shape[0], 1))
-    return cape, cin
+    cape = np.ones((1, shape[1]))
+    cin = np.ones((1, shape[1]))
+    mulev = np.ones((1, shape[1]))
+    zmulev = np.ones((1, shape[1]))    
+    return cape, cin, mulev, zmulev
 
 def calc_cape(p, t, td, ps, ts, tds, source='surface', ml_depth=500., adiabat='pseudo-liquid',
          pinc=1000., method='fortran', vertical_lev='sigma'):
@@ -133,7 +137,8 @@ def calc_cape(p, t, td, ps, ts, tds, source='surface', ml_depth=500., adiabat='p
                   adiabat=_adiabat_options_[adiabat], 
                   pinc=pinc,
                   type_grid=_vertical_lev_options_[vertical_lev])
-
+    print(kwargs)
+    
     if method == 'fortran':
         cape_2d, cin_2d, mulev, zmulev = _cape_fortran(p_2d, t_2d, td_2d, 
                                                        p_s1d, t_s1d, td_s1d,
@@ -141,14 +146,17 @@ def calc_cape(p, t, td, ps, ts, tds, source='surface', ml_depth=500., adiabat='p
     elif method == 'numba':
         cape_2d, cin_2d = _cape_numba(p_2d, t_2d, td_2d, **kwargs)
     elif method == 'dummy':
-        cape_2d, cin_2d = _cape_dummy(p_2d, t_2d, td_2d, **kwargs)
+        cape_2d, cin_2d, mulev, zmulev = _cape_dummy(p_2d, t_2d, td_2d, 
+                                                     p_s1d, t_s1d, td_s1d, 
+                                                     **kwargs)
     else:
         raise ValueError('invalid method')
     
-    cape, cin = _reshape_outputs(cape_2d, cin_2d, shape=original_shape)
     
     if _source_options_[source]==2:
+        cape, cin, mulev, zmulev = _reshape_outputs(cape_2d, cin_2d, mulev, zmulev, shape=original_shape)
         return cape, cin, mulev, zmulev
     else:
+        cape, cin = _reshape_outputs(cape_2d, cin_2d, shape=original_shape)
         return cape, cin
         
