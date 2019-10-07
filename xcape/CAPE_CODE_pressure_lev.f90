@@ -1,9 +1,9 @@
 !-----------------------------------------------------------------------
 !ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
 !-----------------------------------------------------------------------
-    subroutine loopcape(p3d_in , t3d_in , td3d_in, ps_in , ts_in , tds_in, &
-                        &pinc, source, ml_depth, adiabat, type_grid, nk, n2, &
-                        &cape3d, cin3d, z_out3d, MUlvl3d)
+    subroutine loopcape(p3d_in , t3d_in , td3d_in, ps1d_in , ts1d_in , tds1d_in, &
+                        &pinc, source, ml_depth, adiabat, start_3d, &
+                        &nk_in, n2, cape3d, cin3d, z_out3d, MUlvl3d)
 !-----------------------------------------------------------------------
 !  loopcape - loop along n2 dimension to calculate Convective Available
 !            Potential Energy (CAPE) from a sounding.
@@ -46,51 +46,32 @@
     !f2py threadsafe
     !f2py intent(out) :: cape3d,cin3d,z_out3d,MUlvl3d
 
-    integer, intent(in) :: nk,n2
+    integer, intent(in) :: nk_in,n2
     integer :: i,j
-    real, dimension(nk,n2), intent(in) :: p3d_in , t3d_in , td3d_in
-    real, dimension(n2), intent(in) :: ps_in , ts_in , tds_in
+    real, dimension(nk_in,n2), intent(in) :: p3d_in , t3d_in , td3d_in
+    real, dimension(n2), intent(in) :: ps1d_in , ts1d_in , tds1d_in
     real, dimension(n2), intent(out) :: cape3d,cin3d,z_out3d
     integer, dimension(n2), intent(out) :: MUlvl3d
     real, intent(in) :: pinc ! Pressure increment (Pa) for interpolation
     integer, intent(in) :: source ! Source parcel
     real, intent(in) :: ml_depth ! depth (m) of mixed layer,for source=3
     integer, intent(in) :: adiabat   ! Formulation of moist adiabat:
-    integer, intent(in) :: type_grid   ! Formulation of moist adiabat:
-    real, dimension(nk+1,n2) :: pall_in , tall_in , tdall_in
-    integer :: nk_all
+    integer, dimension(n2), intent(in) ::  start_3d  ! for type_grid = 1 : equal to 1
+                                                               ! for type_grid = 2 " array of position of
+                                                               ! valid values in pressure levels
+                                                               ! (where p3d_in <= ps_in )
+    integer :: nk_start, nk_pl_in
 
-    IF (type_grid.EQ.1) THEN
-      pall_in(1,:) = ps_in
-      tall_in(1,:) = ts_in
-      tdall_in(1,:) = tds_in
-      pall_in(2:nk+1,:) = p3d_in(1:nk,:)
-      tall_in(2:nk+1,:) = t3d_in(1:nk,:)
-      tdall_in(2:nk+1,:) = td3d_in(1:nk,:)
-      nk_all = nk+1
-
-    ELSEIF (type_grid.EQ.2) THEN
-      ! write in
-    ENDIF
 
     do i = 1, n2
-      IF(ts_in(i).gt.0.0)THEN
-
-        ! IF (type_grid.EQ.1) THEN
-        !
-        !   pall_in(1) = ps_in(i)
-        !   tall_in(1) = ts_in(i)
-        !   tdall_in(1) = tds_in(i)
-        !   pall_in(2:nk+1) = p3d_in(1:nk,i)
-        !   tall_in(2:nk+1) = t3d_in(1:nk,i)
-        !   tdall_in(2:nk+1) = td3d_in(1:nk,i)
-        !
-        ! ELSEIF (type_grid.EQ.2) THEN
-        !   ! write in
-        ! ENDIF
-
-        call getcape(pall_in(:,i) , tall_in(:,i) , tdall_in(:,i), &
-        &pinc, source, ml_depth, adiabat, nk_all, &
+      IF(ts1d_in(i).gt.0.0)THEN
+        ! use only levels where p3d_in <= ps_in
+        nk_start = start_3d(i)
+        ! compute number of used levels
+        nk_pl_in = nk_in - nk_start + 1
+        call getcape(p3d_in(nk_start:nk_in,i) , t3d_in(nk_start:nk_in,i) , td3d_in(nk_start:nk_in,i), &
+        &ps1d_in(i), ts1d_in(i), tds1d_in(i), &
+        &pinc, source, ml_depth, adiabat, nk_pl_in, &
         &cape3d(i) , cin3d(i), z_out3d(i), MUlvl3d(i))
       ELSE
         cape3d(i) = 0.0
@@ -106,18 +87,19 @@
 !ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
 !-----------------------------------------------------------------------
 
-    subroutine getcape(p_in , t_in , td_in, pinc, source, ml_depth, adiabat, nk, cape , cin, MUlvl, z_out)
+    subroutine getcape(p_in_A , t_in_A , td_in_A, ps_in_B , ts_in_B , tds_in_B, &
+      &pinc, source, ml_depth, adiabat, nk_in, cape , cin, MUlvl, z_out)
     implicit none
 
-    integer, intent(in) :: nk
-    real, dimension(nk), intent(in) :: p_in,t_in,td_in
+    integer, intent(in) :: nk_in ! numbers of levels of 3d array
+    real, dimension(nk_in), intent(in) :: p_in_A,t_in_A,td_in_A
+    real, dimension(1), intent(in) :: ps_in_B,ts_in_B,tds_in_B
     real, intent(out) :: cape,cin,z_out
     integer, intent(out) :: MUlvl
     real, intent(in) :: pinc ! Pressure increment (Pa) for interpolation
     integer, intent(in) :: source ! Source parcel
     real, intent(in) :: ml_depth ! depth (m) of mixed layer,for source=3
     integer, intent(in) :: adiabat   ! Formulation of moist adiabat:
-
 !-----------------------------------------------------------------------
 !
 !  getcape - a fortran90 subroutine to calculate Convective Available
@@ -163,7 +145,8 @@
 
     logical :: doit,ice,cloud,not_converged
     integer :: k,kmax,n,nloop,i,orec
-    real, dimension(nk) :: p,t,td,pi,q,z,th,thv,pt,pb,pc,pn,ptv
+
+    real, dimension(nk_in+1) :: p,t,td,pi,q,z,th,thv,pt,pb,pc,pn,ptv ! use nk_in +1 in place of nk
 
     real :: the,maxthe,parea,narea,lfc
     real :: th1,p1,t1,qv1,ql1,qi1,b1,pi1,thv1,qt,dp,dz,ps,frac
@@ -202,6 +185,19 @@
     integer, parameter :: debug_level =   0
 
 !-----------------------------------------------------------------------
+    real, dimension(nk_in+1) :: p_in,t_in,td_in
+    integer :: nk  ! number of levels of 3d array PLUS surface level
+
+    nk = nk_in + 1 ! number of levels of 3d array PLUS surface level
+    p_in(1) = ps_in_B(1)
+    t_in(1) = ts_in_B(1)
+    td_in(1) = tds_in_B(1)
+    p_in(2:nk) = p_in_A
+    t_in(2:nk) = t_in_A
+    td_in(2:nk) = td_in_A
+    !print *,'  ts_in_B = ',ts_in_B
+    !print *,'  nk_in, t_in_A = ', nk_in, t_in_A
+    !print *,'  nk, t_in = ',nk, t_in
 
 !---- convert p,t,td to mks units; get pi,q,th,thv ----!
 
