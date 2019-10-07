@@ -3,7 +3,7 @@
 !-----------------------------------------------------------------------
     subroutine loopcape(p3d_in , t3d_in , td3d_in, ps1d_in , ts1d_in , tds1d_in, &
                         &pinc, source, ml_depth, adiabat, start_3d, &
-                        &nk_in, n2, cape3d, cin3d, z_out3d, MUlvl3d)
+                        &nk_in, n2, cape3d, cin3d, MUlvl3d, z_out3d)
 !-----------------------------------------------------------------------
 !  loopcape - loop along n2 dimension to calculate Convective Available
 !            Potential Energy (CAPE) from a sounding.
@@ -72,12 +72,12 @@
         call getcape(p3d_in(nk_start:nk_in,i) , t3d_in(nk_start:nk_in,i) , td3d_in(nk_start:nk_in,i), &
         &ps1d_in(i), ts1d_in(i), tds1d_in(i), &
         &pinc, source, ml_depth, adiabat, nk_pl_in, &
-        &cape3d(i) , cin3d(i), z_out3d(i), MUlvl3d(i))
+        &cape3d(i) , cin3d(i), MUlvl3d(i), z_out3d(i))
       ELSE
         cape3d(i) = 0.0
         cin3d(i)  = 0.0
         z_out3d(i)= 0.0
-        MUlvl3d(i)= 0.0
+        MUlvl3d(i)= 0
       ENDIF
     enddo
     return
