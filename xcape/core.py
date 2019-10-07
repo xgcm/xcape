@@ -62,7 +62,8 @@ def _reshape_surface_outputs(*args, shape=None):
     return [np.reshape(a, target_shape) for a in args]
 
 
-def _cape_dummy(p, t, td, ps, ts, tds, source, ml_depth, adiabat, pinc, type_grid):
+def _cape_dummy(p, t, td, ps, ts, tds, pres_lev_pos,
+                source, ml_depth, adiabat, pinc, type_grid):
     # cape is a reduction along the second axis.
     # this tests that reshaping works.
     # calc_cape needs input in shape (nlevs, npoints)
@@ -75,7 +76,7 @@ def _cape_dummy(p, t, td, ps, ts, tds, source, ml_depth, adiabat, pinc, type_gri
     return cape, cin, mulev, zmulev
 
 def calc_cape(p, t, td, ps, ts, tds, source='surface', ml_depth=500., adiabat='pseudo-liquid',
-         pinc=1000., method='fortran', vertical_lev='sigma'):
+         pinc=1000., method='fortran', vertical_lev='sigma', pres_lev_pos=1):
     """
     Calculate cape for a set of profiles over the first axis of the arrays.
 
@@ -83,6 +84,8 @@ def calc_cape(p, t, td, ps, ts, tds, source='surface', ml_depth=500., adiabat='p
     ----------
     p : array-like
         Pressure in mb.
+        When vertical_lev='model', p.shape = t.shape = (nlev, x, y, ...)
+        When vertical_lev='pressure', p.shape = t.shape[0] = (nlev)
     t : array-like
         Temperature in Celsius
     td : array-like
@@ -103,7 +106,10 @@ def calc_cape(p, t, td, ps, ts, tds, source='surface', ml_depth=500., adiabat='p
         Which numerical routine to use
     vertical_lev : {'sigma', 'pressure'}
         Which vertical grid is used
-
+    pres_lev_pos :  array-like,
+        location in fortran values (1: nlev) of where p <= ps. 
+        When vertical_lev='model', pres_lev_pos = 1
+        When vertical_lev='pressure', pres_lev_pos.shape = ps.shape
     Returns
     -------
     cape : array-like
@@ -148,6 +154,7 @@ def calc_cape(p, t, td, ps, ts, tds, source='surface', ml_depth=500., adiabat='p
     elif method == 'dummy':
         cape_2d, cin_2d, mulev, zmulev = _cape_dummy(p_2d, t_2d, td_2d, 
                                                      p_s1d, t_s1d, td_s1d, 
+                                                     pres_lev_pos,
                                                      **kwargs)
     else:
         raise ValueError('invalid method')
