@@ -787,7 +787,7 @@ def test_calc_surface_cape_model_lev(dataset_soundings):
                           ds.dewpoint.values[0], 
                           source='surface', ml_depth=500., adiabat='pseudo-liquid',
                           pinc=100., 
-                          method='test', vertical_lev='sigma', pres_lev_pos=1)
+                          method='fortran', vertical_lev='sigma', pres_lev_pos=1)
     
     np.testing.assert_almost_equal(cape[0], ds.SB_CAPE_pinc100.values, 0)
     np.testing.assert_almost_equal(cin[0], ds.SB_CIN_pinc100.values, 0)
@@ -804,7 +804,7 @@ def test_calc_most_unstable_cape_model_lev(dataset_soundings):
                           ds.dewpoint.values[0], 
                           source='most-unstable', ml_depth=500., adiabat='pseudo-liquid',
                           pinc=100., 
-                          method='test', vertical_lev='sigma', pres_lev_pos=1)
+                          method='fortran', vertical_lev='sigma', pres_lev_pos=1)
     
     np.testing.assert_almost_equal(cape[0], ds.MU_CAPE_pinc100.values, 0)
     np.testing.assert_almost_equal(cin[0], ds.MU_CIN_pinc100.values, 0)
@@ -823,7 +823,7 @@ def test_calc_mixed_layer_cape_model_lev(dataset_soundings):
                           ds.dewpoint.values[0], 
                           source='mixed-layer', ml_depth=500., adiabat='pseudo-liquid',
                           pinc=1000., 
-                          method='test', vertical_lev='sigma', pres_lev_pos=1)
+                          method='fortran', vertical_lev='sigma', pres_lev_pos=1)
     
     np.testing.assert_almost_equal(cape[0], ds.ML_CAPE_pinc1000_mldepth500.values, 0)
     np.testing.assert_almost_equal(cin[0], ds.ML_CIN_pinc1000_mldepth500.values, 0)
