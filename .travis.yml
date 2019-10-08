@@ -28,6 +28,9 @@ before_install:
 install:
   - conda env create -f $CONDA_ENV
   - source activate xcape_test_env
+  - if [ $DOCTEST == 'false' ];
+    python setup.py build_ext
+    fi
   - pip install -e .
 
 script:
