@@ -8,7 +8,6 @@ dependencies:
   - numpy>=1.16
   - pytest
   - fortran-compiler
-  - f2py
   - pip:
     - codecov
     - pytest-cov
