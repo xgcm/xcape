@@ -157,6 +157,11 @@ def calc_cape(p, t, td, ps, ts, tds, source='surface', ml_depth=500., adiabat='p
                                                      p_s1d, t_s1d, td_s1d, 
                                                      pres_lev_pos,
                                                      **kwargs)
+    elif method == 'test':
+        cape_2d, cin_2d, mulev, zmulev = _cape_fortran(p_2d, t_2d, td_2d, 
+                                                       p_s1d, t_s1d, td_s1d, 
+                                                       pres_lev_pos,
+                                                       **kwargs)
     else:
         raise ValueError('invalid method')
     
