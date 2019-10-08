@@ -1,4 +1,6 @@
 name: xcape_test_env
+channel:
+  - conda-forge
 dependencies:
   - python=3.6
   - xarray
