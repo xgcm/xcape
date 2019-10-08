@@ -1,5 +1,5 @@
 name: xcape_test_env
-channel:
+channels:
   - conda-forge
 dependencies:
   - python=3.6
