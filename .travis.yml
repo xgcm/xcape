@@ -13,6 +13,7 @@ matrix:
     env: CONDA_ENV="doc/environment.yml" DOCTEST=true
 
 before_install:
+  - sudo apt-get install gfortran
   - if [[ "$TRAVIS_PYTHON_VERSION" == "2.7" ]]; then
       wget http://repo.continuum.io/miniconda/Miniconda-3.16.0-Linux-x86_64.sh -O miniconda.sh;
     else
@@ -28,6 +29,9 @@ before_install:
 install:
   - conda env create -f $CONDA_ENV
   - source activate xcape_test_env
+  - if [ $DOCTEST == 'false' ];
+    then python setup.py build_ext;
+    fi
   - pip install -e .
 
 script:
