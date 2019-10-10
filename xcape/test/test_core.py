@@ -44,7 +44,10 @@ def test_calc_cape_shape_3d(p_t_td_3d, p_t_td_surface, sourcein, n_returns):
         assert data.shape == (1, p.shape[1], p.shape[2])
 
 # tolerance for tests
-decimal = 3
+decimal_cape = 0
+decimal_cin = 0
+decimal_mulv = 0
+decimal_zmulv = 0
 
 def test_calc_surface_cape_model_lev(dataset_soundings):
     """Test Surface Cape based on previously calculated using George Bryans code"""
@@ -60,13 +63,14 @@ def test_calc_surface_cape_model_lev(dataset_soundings):
                           pinc=100.,
                           method='fortran', vertical_lev='sigma', pres_lev_pos=1)
 
-    np.testing.assert_almost_equal(cape[0], ds.SB_CAPE_pinc100.values, decimal)
-    np.testing.assert_almost_equal(cin[0], ds.SB_CIN_pinc100.values, decimal)
+    np.testing.assert_almost_equal(cape[0], ds.SB_CAPE_pinc100.values, decimal_cape)
+    np.testing.assert_almost_equal(cin[0], ds.SB_CIN_pinc100.values, decimal_cin)
 
 def test_calc_most_unstable_cape_model_lev(dataset_soundings):
     """Test Surface Cape based on previously calculated using George Bryans code"""
     ds = dataset_soundings
 
+    # in real data, the surface values will come in separate variables
     cape, cin, mulv, zmulv = calc_cape(ds.pressure.values[1:],
                           ds.temperature.values[1:],
                           ds.dewpoint.values[1:],
@@ -77,10 +81,10 @@ def test_calc_most_unstable_cape_model_lev(dataset_soundings):
                           pinc=100.,
                           method='fortran', vertical_lev='sigma', pres_lev_pos=1)
 
-    np.testing.assert_almost_equal(cape[0], ds.MU_CAPE_pinc100.values, decimal)
-    np.testing.assert_almost_equal(cin[0], ds.MU_CIN_pinc100.values, decimal)
-    np.testing.assert_almost_equal(mulv[0], ds.MU_lv_pinc100.values.astype('int32'), decimal)
-    np.testing.assert_almost_equal(zmulv[0], ds.MU_z_pinc100.values, decimal)
+    np.testing.assert_almost_equal(cape[0], ds.MU_CAPE_pinc100.values, decimal_cape)
+    np.testing.assert_almost_equal(cin[0], ds.MU_CIN_pinc100.values, decimal_cin)
+    np.testing.assert_almost_equal(mulv[0], ds.MU_lv_pinc100.values.astype('int32'), decimal_mulv)
+    np.testing.assert_almost_equal(zmulv[0], ds.MU_z_pinc100.values, decimal_zmulv)
 
 def test_calc_mixed_layer_cape_model_lev(dataset_soundings):
     """Test Surface Cape based on previously calculated using George Bryans code"""
@@ -96,5 +100,5 @@ def test_calc_mixed_layer_cape_model_lev(dataset_soundings):
                           pinc=1000.,
                           method='fortran', vertical_lev='sigma', pres_lev_pos=1)
 
-    np.testing.assert_almost_equal(cape[0], ds.ML_CAPE_pinc1000_mldepth500.values, decimal)
-    np.testing.assert_almost_equal(cin[0], ds.ML_CIN_pinc1000_mldepth500.values, decimal)
+    np.testing.assert_almost_equal(cape[0], ds.ML_CAPE_pinc1000_mldepth500.values, decimal_cape)
+    np.testing.assert_almost_equal(cin[0], ds.ML_CIN_pinc1000_mldepth500.values, decimal_cin)
