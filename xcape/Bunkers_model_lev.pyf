@@ -1,0 +1,43 @@
+!    -*- f90 -*-
+! Note: the context of this file is case sensitive.
+
+python module Bunkers_model_lev ! in 
+    interface  ! in :Bunkers_model_lev
+        subroutine loop(u3d,v3d,aglh3d,us,vs,aglhs,nk,n2,rm,lm,mean6kmwind) ! in :Bunkers_model_lev:Bunkers_model_lev.f90
+            threadsafe 
+            real dimension(nk,n2),intent(in) :: u3d
+            real dimension(nk,n2),intent(in),depend(nk,n2) :: v3d
+            real dimension(nk,n2),intent(in),depend(nk,n2) :: aglh3d
+            real dimension(n2),intent(in),depend(n2) :: us
+            real dimension(n2),intent(in),depend(n2) :: vs
+            real dimension(n2),intent(in),depend(n2) :: aglhs
+            integer, optional,intent(in),check(shape(u3d,0)==nk),depend(u3d) :: nk=shape(u3d,0)
+            integer, optional,intent(in),check(shape(u3d,1)==n2),depend(u3d) :: n2=shape(u3d,1)
+            real dimension(2,n2),intent(out),depend(n2) :: rm
+            real dimension(2,n2),intent(out),depend(n2) :: lm
+            real dimension(2,n2),intent(out),depend(n2) :: mean6kmwind
+        end subroutine loop
+        subroutine bunkers_calc(u,v,aglh,nk,rm,lm,mean6kmwind) ! in :Bunkers_model_lev:Bunkers_model_lev.f90
+            threadsafe 
+            real dimension(nk),intent(in) :: u
+            real dimension(nk),intent(in),depend(nk) :: v
+            real dimension(nk),intent(in),depend(nk) :: aglh
+            integer, optional,intent(in),check(len(u)>=nk),depend(u) :: nk=len(u)
+            real dimension(2),intent(out) :: rm
+            real dimension(2),intent(out) :: lm
+            real dimension(2),intent(out) :: mean6kmwind
+        end subroutine bunkers_calc
+        subroutine dinterp2dz(v3d,z,loc,v2d,n2,nz) ! in :Bunkers_model_lev:Bunkers_model_lev.f90
+            threadsafe 
+            real dimension(nz,n2),intent(in) :: v3d
+            real dimension(nz,n2),intent(in),depend(nz,n2) :: z
+            real intent(in) :: loc
+            real dimension(n2),intent(out),depend(n2) :: v2d
+            integer, optional,check(shape(v3d,1)==n2),depend(v3d) :: n2=shape(v3d,1)
+            integer, optional,check(shape(v3d,0)==nz),depend(v3d) :: nz=shape(v3d,0)
+        end subroutine dinterp2dz
+    end interface 
+end python module Bunkers_model_lev
+
+! This file was auto-generated with f2py (version:2).
+! See http://cens.ioc.ee/projects/f2py2e/
