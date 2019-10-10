@@ -44,7 +44,7 @@ def test_calc_cape_shape_3d(p_t_td_3d, p_t_td_surface, sourcein, n_returns):
         assert data.shape == (1, p.shape[1], p.shape[2])
 
 # tolerance for tests
-decimal = 7
+decimal = 4
 
 def test_calc_surface_cape_model_lev(dataset_soundings):
     """Test Surface Cape based on previously calculated using George Bryans code"""
