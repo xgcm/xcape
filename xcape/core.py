@@ -196,6 +196,10 @@ def calc_srh(p, t, td, u, v,  ps, ts, tds, us, vs, depth = 3000,
         location in fortran values (1: nlev) of where p <= ps. 
         When vertical_lev='model', pres_lev_pos = 1
         When vertical_lev='pressure', pres_lev_pos.shape = ps.shape
+    output_var : {'srh', 'all'}
+        'srh' = for only srh
+        'all' = for srh, Bunkers' right-moving and left-moving storm component, 
+                mean not pressure averaged 6km wind
     Returns
     -------
     srh : array-like
@@ -210,13 +214,13 @@ def calc_srh(p, t, td, u, v,  ps, ts, tds, us, vs, depth = 3000,
     p_2d, t_2d, td_2d, u2d, v2d = _reshape_inputs(p, t, td, u, v)
     # after this, all surface arrays are 1d shape (npoints)    
     p_s1d, t_s1d, td_s1d, u_s1d, v_s1d = _reshape_surface_inputs(ps, ts, tds, us, vs)
-    print(p_2d.shape, p_s1d.shape)
     
     _vertical_lev_options_ ={'sigma':1, 'pressure':2}
-            
-    kwargs = dict(depth=ml_depth, 
-                  type_grid=_vertical_lev_options_[vertical_lev])
-    print(kwargs)
+    _output_var_options = {'srh':1, 'all':2}        
+
+    kwargs = dict(type_grid=_vertical_lev_options_[vertical_lev],
+                  output = _output_var_options[output_var])
+    
     aglh_2d, aglh_s1d = _stdheight(p_2d, t_2d, td_2d,
                                    p_s1d, t_s1d, td_s1d,
                                    pres_lev_pos, aglh0 = 2.,
@@ -224,41 +228,12 @@ def calc_srh(p, t, td, u, v,  ps, ts, tds, us, vs, depth = 3000,
     
     srh_2d = _srh(u_2d, v_2d, aglh_2d, 
                   u_s1d, v_s1d, aglh_s1d,
-                  pres_lev_pos,
-                  **kwargs)
+                  pres_lev_pos, depth, 
+                  **kwargs_)
     
-    
-    srh = _reshape_outputs(srh_2d, shape=original_shape)
-    return srh
-    
-    
-    from conv_parameters import SREH_model_lev
-from conv_parameters import Bunkers_model_lev
-from conv_parameters import stdheight_2D_model_lev
-start = timer()
-
-H2D_split, H2D_surface  = stdheight_2D_model_lev.loop_stdheight(Pst[1:],Tst[1:],Tdst[1:],
-                                                                Pst[0],Tst[0],Tdst[0],
-                                                                Hinst*0+2.,
-                                                                Pst.shape[0]-1,Pst.shape[1])
-end = timer()
-print('stdheight fortran 2D split',end-start)
-
-rm_sup3,lm_sup3,meanwind_6km3 = Bunkers_model_lev.loop(U.reshape(P.shape[0],241*480)[1:],
-                                    V.reshape(P.shape[0],241*480)[1:],
-                                    H2D_split,
-                                    U.reshape(P.shape[0],241*480)[0],
-                                    V.reshape(P.shape[0],241*480)[0],
-                                    H2D_surface)
-
-
-srh3kmb4 = SREH_model_lev.loop_sreh(U.reshape(P.shape[0],241*480)[1:],
-                                    V.reshape(P.shape[0],241*480)[1:],
-                                    AGLH.reshape(P.shape[0],241*480)[1:],
-                                    U.reshape(P.shape[0],241*480)[0],
-                                    V.reshape(P.shape[0],241*480)[0],
-                                    AGLH.reshape(P.shape[0],241*480)[0],
-                          rm_sup2[0,:],
-                          rm_sup2[1,:],3000.)
-end = timer()
-print('loop fortran flat4 ',end-start)
+    if _output_var_options[output_var] == 1:
+        srh = _reshape_outputs(srh_2d, shape=original_shape)
+        return srh
+    else
+        srh, rm, lm, mean_6km = _reshape_outputs(srh_2d, shape=original_shape)
+        return srh, rm, lm, mean_6km
