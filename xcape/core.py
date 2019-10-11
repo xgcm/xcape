@@ -234,6 +234,6 @@ def calc_srh(p, t, td, u, v,  ps, ts, tds, us, vs, depth = 3000,
     if _output_var_options[output_var] == 1:
         srh = _reshape_outputs(srh_2d, shape=original_shape)
         return srh
-    else
+    else:
         srh, rm, lm, mean_6km = _reshape_outputs(srh_2d, shape=original_shape)
         return srh, rm, lm, mean_6km
