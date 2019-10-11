@@ -33,6 +33,8 @@ def _reshape_outputs(*args, shape=None):
     if len(shape)==1:
         target_shape = (1,)
     else:
+        # 1 is in place of the level dimension
+        # shape[1:] is the remaining shape
         target_shape = (1,) + shape[1:]
     return [np.reshape(a, target_shape) for a in args]
 
@@ -60,6 +62,10 @@ def _reshape_surface_outputs(*args, shape=None):
         target_shape = (1,) + shape[1:]
     return [np.reshape(a, target_shape) for a in args]
 
+def _reshape_outputs_stdheight(*args, shape=None):
+    # calc_cape needs input in shape (nlevs, npoints)
+    target_shape = shape
+    return [np.reshape(a, target_shape) for a in args]
 
 def _cape_dummy(p, t, td, ps, ts, tds, pres_lev_pos,
                 source, ml_depth, adiabat, pinc, type_grid):
