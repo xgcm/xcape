@@ -9,6 +9,8 @@ from .duck_array_ops import (reshape, ravel_multi_index, concatenate,
 
 from .cape_fortran import cape as _cape_fortran
 from .cape_numba import cape as _cape_numba
+from .srh import srh as _srh
+from .stdheight import stdheight as _stdheight
 
 def _prod(v):
     return reduce(lambda x, y: x*y, v)
