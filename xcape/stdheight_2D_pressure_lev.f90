@@ -19,7 +19,7 @@
           ! compute number of used levels in 3d
           nk_pl_in = NK - nk_start + 1
           ! the unused levels in the output are set to -999999
-          print *,nk_start, nk_pl_in, nk
+          ! print *,nk_start, nk_pl_in, nk
           IF (nk_start .GT. 1) THEN
               H(1:nk_start-1,i) = -999999
           ENDIF

@@ -30,14 +30,21 @@ def _reshape_inputs(*args):
     return args_2d
 
 def _reshape_outputs(*args, shape=None):
-    # calc_cape needs input in shape (nlevs, npoints)
-
     if len(shape)==1:
         target_shape = (1,)
     else:
         # 1 is in place of the level dimension
         # shape[1:] is the remaining shape
         target_shape = (1,) + shape[1:]
+    return [np.reshape(a, target_shape) for a in args]
+
+def _reshape_outputs_uv_components(*args, shape=None):
+    if len(shape)==1:
+        target_shape = (2,)
+    else:
+        # 1 is in place of the level dimension
+        # shape[1:] is the remaining shape
+        target_shape = (2,) + shape[1:]
     return [np.reshape(a, target_shape) for a in args]
 
 def _reshape_surface_inputs(*args):
@@ -173,7 +180,7 @@ def calc_cape(p, t, td, ps, ts, tds, source='surface', ml_depth=500., adiabat='p
     
 
 def calc_srh(p, t, td, u, v,  ps, ts, tds, us, vs, depth = 3000, 
-             vertical_lev='sigma', pres_lev_pos=1):
+             vertical_lev='sigma', pres_lev_pos=1, output_var='all'):
     """
     Calculate cape for a set of profiles over the first axis of the arrays.
 
@@ -214,34 +221,41 @@ def calc_srh(p, t, td, u, v,  ps, ts, tds, us, vs, depth = 3000,
     """
 
     original_shape = p.shape
-    print(original_shape)
     original_surface_shape = ps.shape
-    print(original_surface_shape)
 
     # after this, all arrays are 2d shape (nlevs, npoints)
-    p_2d, t_2d, td_2d, u2d, v2d = _reshape_inputs(p, t, td, u, v)
+    p_2d, t_2d, td_2d, u_2d, v_2d = _reshape_inputs(p, t, td, u, v)
     # after this, all surface arrays are 1d shape (npoints)    
     p_s1d, t_s1d, td_s1d, u_s1d, v_s1d = _reshape_surface_inputs(ps, ts, tds, us, vs)
     
     _vertical_lev_options_ ={'sigma':1, 'pressure':2}
     _output_var_options = {'srh':1, 'all':2}        
 
-    kwargs = dict(type_grid=_vertical_lev_options_[vertical_lev],
-                  output = _output_var_options[output_var])
+    kwargs_stdh = dict(type_grid=_vertical_lev_options_[vertical_lev])
     
     aglh_2d, aglh_s1d = _stdheight(p_2d, t_2d, td_2d,
                                    p_s1d, t_s1d, td_s1d,
                                    pres_lev_pos, aglh0 = 2.,
-                                   **kwargs)
+                                   **kwargs_stdh)
     
-    srh_2d = _srh(u_2d, v_2d, aglh_2d, 
-                  u_s1d, v_s1d, aglh_s1d,
-                  pres_lev_pos, depth, 
-                  **kwargs_)
+    kwargs = dict(type_grid=_vertical_lev_options_[vertical_lev],
+                  output = _output_var_options[output_var])
+    
     
     if _output_var_options[output_var] == 1:
-        srh = _reshape_outputs(srh_2d, shape=original_shape)
+        srh_2d = _srh(u_2d, v_2d, aglh_2d, 
+                      u_s1d, v_s1d, aglh_s1d,
+                      pres_lev_pos, depth, 
+                      **kwargs)
+
+        srh = _reshape_outputs(srh_2d, shape=original_shape)[0]
         return srh
     else:
-        srh, rm, lm, mean_6km = _reshape_outputs(srh_2d, shape=original_shape)
+        srh_2d, rm_2d, lm_2d, mean_6km_2d = _srh(u_2d, v_2d, aglh_2d, 
+                      u_s1d, v_s1d, aglh_s1d,
+                      pres_lev_pos, depth, 
+                      **kwargs)
+        
+        srh = _reshape_outputs(srh_2d, shape=original_shape)[0]
+        rm, lm, mean_6km = _reshape_outputs_uv_components(rm_2d, lm_2d, mean_6km_2d, shape=original_shape)
         return srh, rm, lm, mean_6km
