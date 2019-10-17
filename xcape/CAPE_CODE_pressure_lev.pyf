@@ -3,7 +3,7 @@
 
 python module CAPE_CODE_pressure_lev ! in 
     interface  ! in :CAPE_CODE_pressure_lev
-        subroutine loopcape(p3d_in,t3d_in,td3d_in,ps1d_in,ts1d_in,tds1d_in,pinc,source,ml_depth,adiabat,start_3d,nk_in,n2,cape3d,cin3d,mulvl3d,z_out3d) ! in :CAPE_CODE_pressure_lev:CAPE_CODE_pressure_lev.f90
+        subroutine loopcape_pl(p3d_in,t3d_in,td3d_in,ps1d_in,ts1d_in,tds1d_in,pinc,source,ml_depth,adiabat,start_3d,nk_in,n2,cape3d,cin3d,mulvl3d,z_out3d) ! in :CAPE_CODE_pressure_lev:CAPE_CODE_pressure_lev.f90
             threadsafe 
             real dimension(nk_in,n2),intent(in) :: p3d_in
             real dimension(nk_in,n2),intent(in),depend(nk_in,n2) :: t3d_in
@@ -22,8 +22,8 @@ python module CAPE_CODE_pressure_lev ! in
             real dimension(n2),intent(out),depend(n2) :: cin3d
             integer dimension(n2),intent(out),depend(n2) :: mulvl3d
             real dimension(n2),intent(out),depend(n2) :: z_out3d
-        end subroutine loopcape
-        subroutine getcape(p_in_a,t_in_a,td_in_a,ps_in_b,ts_in_b,tds_in_b,pinc,source,ml_depth,adiabat,nk_in,cape,cin,mulvl,z_out) ! in :CAPE_CODE_pressure_lev:CAPE_CODE_pressure_lev.f90
+        end subroutine loopcape_pl
+        subroutine getcape_pl(p_in_a,t_in_a,td_in_a,ps_in_b,ts_in_b,tds_in_b,pinc,source,ml_depth,adiabat,nk_in,cape,cin,mulvl,z_out) ! in :CAPE_CODE_pressure_lev:CAPE_CODE_pressure_lev.f90
             real dimension(nk_in),intent(in) :: p_in_a
             real dimension(nk_in),intent(in),depend(nk_in) :: t_in_a
             real dimension(nk_in),intent(in),depend(nk_in) :: td_in_a
@@ -39,7 +39,7 @@ python module CAPE_CODE_pressure_lev ! in
             real intent(out) :: cin
             integer intent(out) :: mulvl
             real intent(out) :: z_out
-        end subroutine getcape
+        end subroutine getcape_pl
         function getqvs(p,t) ! in :CAPE_CODE_pressure_lev:CAPE_CODE_pressure_lev.f90
             real :: p
             real :: t

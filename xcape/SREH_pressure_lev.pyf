@@ -3,7 +3,7 @@
 
 python module SREH_pressure_lev ! in 
     interface  ! in :SREH_pressure_lev
-        subroutine loop_sreh(u,v,aglh,us,vs,aglhs,cu,cv,top,start_3d,nk,n2,sreh) ! in :SREH_pressure_lev:SREH_pressure_lev.f90
+        subroutine loop_sreh_pl(u,v,aglh,us,vs,aglhs,cu,cv,top,start_3d,nk,n2,sreh) ! in :SREH_pressure_lev:SREH_pressure_lev.f90
             threadsafe 
             real(kind=8) dimension(nk,n2),intent(in) :: u
             real(kind=8) dimension(nk,n2),intent(in),depend(nk,n2) :: v
@@ -18,8 +18,8 @@ python module SREH_pressure_lev ! in
             integer, optional,intent(in),check(shape(u,0)==nk),depend(u) :: nk=shape(u,0)
             integer, optional,intent(in),check(shape(u,1)==n2),depend(u) :: n2=shape(u,1)
             real(kind=8) dimension(n2),intent(out),depend(n2) :: sreh
-        end subroutine loop_sreh
-        subroutine dcalrelhl(u,v,aglh,cu,cv,top,nk,sreh) ! in :SREH_pressure_lev:SREH_pressure_lev.f90
+        end subroutine loop_sreh_pl
+        subroutine dcalrelhl_pl(u,v,aglh,cu,cv,top,nk,sreh) ! in :SREH_pressure_lev:SREH_pressure_lev.f90
             threadsafe 
             real(kind=8) dimension(nk),intent(in) :: u
             real(kind=8) dimension(nk),intent(in),depend(nk) :: v
@@ -29,7 +29,7 @@ python module SREH_pressure_lev ! in
             real(kind=8) intent(in) :: top
             integer, optional,intent(in),check(len(u)>=nk),depend(u) :: nk=len(u)
             real(kind=8) dimension(1),intent(out) :: sreh
-        end subroutine dcalrelhl
+        end subroutine dcalrelhl_pl
         function interp1(y1,y3,x1,x2,x3) ! in :SREH_pressure_lev:SREH_pressure_lev.f90
             real(kind=8) :: y1
             real(kind=8) :: y3

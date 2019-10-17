@@ -1,7 +1,7 @@
 !-----------------------------------------------------------------------
 !ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
 !-----------------------------------------------------------------------
-    subroutine loop(U3d, V3d, AGLH3d, Us, Vs, AGLHs, nk, n2, RM, LM, Mean6kmwind)
+    subroutine bunkers_loop_ml(U3d, V3d, AGLH3d, Us, Vs, AGLHs, nk, n2, RM, LM, Mean6kmwind)
 !-----------------------------------------------------------------------
 !  bunkers_loop - loop along n2 dimension to calculate RM,LM,Mean6kmwind.
 !
@@ -34,17 +34,17 @@
         U_all(2:nk_all) = U3d(:,i)
         V_all(2:nk_all) = V3d(:,i)
         AGLH_all(2:nk_all) = AGLH3d(:,i)
-        call bunkers_calc(U_all(:), V_all(:), AGLH_all(:), nk_all, &
+        call bunkers_calc_ml(U_all(:), V_all(:), AGLH_all(:), nk_all, &
                           &RM(:,i), LM(:,i), Mean6kmwind(:,i))
     enddo
     return
-    end subroutine loop
+    end subroutine bunkers_loop_ml
 
 
 !-----------------------------------------------------------------------
 !ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
 !-----------------------------------------------------------------------
-    subroutine bunkers_calc(U, V, AGLH, nk, RM, LM, Mean6kmwind)
+    subroutine bunkers_calc_ml(U, V, AGLH, nk, RM, LM, Mean6kmwind)
 !-----------------------------------------------------------------------
 !  bunkers_calc - loop along n2 dimension to calculate RM,LM,Mean6kmwind.
 !
@@ -140,7 +140,7 @@
     LM(2) = Mean6kmwind(2) + 7.5*ushr/(ushr**2+vshr**2)**0.5
 
     return
-    end subroutine bunkers_calc
+    end subroutine bunkers_calc_ml
 
 !-----------------------------------------------------------------------
 !ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc

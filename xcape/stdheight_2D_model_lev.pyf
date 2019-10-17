@@ -3,7 +3,7 @@
 
 python module stdheight_2D_model_lev ! in 
     interface  ! in :stdheight_2D_model_lev
-        subroutine loop_stdheight(p,t,td,ps,ts,tds,hin,nk,nx,h,hs) ! in :stdheight_2D_model_lev:stdheight_2D_model_lev.f90
+        subroutine loop_stdheight_ml(p,t,td,ps,ts,tds,hin,nk,nx,h,hs) ! in :stdheight_2D_model_lev:stdheight_2D_model_lev.f90
             threadsafe 
             double precision dimension(nk,nx),intent(in) :: p
             double precision dimension(nk,nx),intent(in),depend(nk,nx) :: t
@@ -16,8 +16,8 @@ python module stdheight_2D_model_lev ! in
             integer, optional,intent(in),check(shape(p,1)==nx),depend(p) :: nx=shape(p,1)
             double precision dimension(nk,nx),intent(out),depend(nk,nx) :: h
             double precision dimension(nx),intent(out),depend(nx) :: hs
-        end subroutine loop_stdheight
-        subroutine stdheight(p,t,td,ps,ts,tds,hin,nk,h,hs) ! in :stdheight_2D_model_lev:stdheight_2D_model_lev.f90
+        end subroutine loop_stdheight_ml
+        subroutine stdheight_ml(p,t,td,ps,ts,tds,hin,nk,h,hs) ! in :stdheight_2D_model_lev:stdheight_2D_model_lev.f90
             threadsafe 
             double precision dimension(nk),intent(in) :: p
             double precision dimension(nk),intent(in),depend(nk) :: t
@@ -29,7 +29,7 @@ python module stdheight_2D_model_lev ! in
             integer, optional,intent(in),check(len(p)>=nk),depend(p) :: nk=len(p)
             double precision dimension(nk),intent(out),depend(nk) :: h
             double precision intent(out) :: hs
-        end subroutine stdheight
+        end subroutine stdheight_ml
     end interface 
 end python module stdheight_2D_model_lev
 

@@ -1,7 +1,7 @@
 !-----------------------------------------------------------------------
 !ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
 !-----------------------------------------------------------------------
-      SUBROUTINE loop_sreh(u, v, aglh, us, vs, aglhs, &
+      SUBROUTINE loop_sreh_ml(u, v, aglh, us, vs, aglhs, &
                           &cu, cv, top, nk, n2, sreh)
       IMPLICIT NONE
 
@@ -26,17 +26,17 @@
           v_all(2:nk_all) = v(:,i)
           aglh_all(2:nk_all) = aglh(:,i)
 
-          call DCALRELHL(u_all, v_all, aglh_all, &
+          call DCALRELHL_ml(u_all, v_all, aglh_all, &
           &cu(i), cv(i), top, nk_all, sreh(i) )
       enddo
       return
-      end subroutine loop_sreh
+      end subroutine loop_sreh_ml
 
       !-----------------------------------------------------------------------
       !ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
       !-----------------------------------------------------------------------
 
-      SUBROUTINE DCALRELHL(u, v, aglh, cu, cv, top, nk, sreh )
+      SUBROUTINE DCALRELHL_ml(u, v, aglh, cu, cv, top, nk, sreh )
 
       IMPLICIT NONE
 
@@ -89,7 +89,7 @@
 
       RETURN
 
-      END SUBROUTINE DCALRELHL
+      END SUBROUTINE DCALRELHL_ml
 
 !-------Functions - Interpolation
 !-------Given Y1 at X1, Y3 at X3, and X2, Calculate Y2(Interp) at X2

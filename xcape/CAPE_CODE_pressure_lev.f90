@@ -1,7 +1,7 @@
 !-----------------------------------------------------------------------
 !ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
 !-----------------------------------------------------------------------
-    subroutine loopcape(p3d_in , t3d_in , td3d_in, ps1d_in , ts1d_in , tds1d_in, &
+    subroutine loopcape_pl(p3d_in , t3d_in , td3d_in, ps1d_in , ts1d_in , tds1d_in, &
                         &pinc, source, ml_depth, adiabat, start_3d, &
                         &nk_in, n2, cape3d, cin3d, MUlvl3d, z_out3d)
 !-----------------------------------------------------------------------
@@ -69,7 +69,7 @@
         nk_start = start_3d(i)
         ! compute number of used levels
         nk_pl_in = nk_in - nk_start + 1
-        call getcape(p3d_in(nk_start:nk_in,i) , t3d_in(nk_start:nk_in,i) , td3d_in(nk_start:nk_in,i), &
+        call getcape_pl(p3d_in(nk_start:nk_in,i) , t3d_in(nk_start:nk_in,i) , td3d_in(nk_start:nk_in,i), &
         &ps1d_in(i), ts1d_in(i), tds1d_in(i), &
         &pinc, source, ml_depth, adiabat, nk_pl_in, &
         &cape3d(i) , cin3d(i), MUlvl3d(i), z_out3d(i))
@@ -81,13 +81,13 @@
       ENDIF
     enddo
     return
-    end subroutine loopcape
+    end subroutine loopcape_pl
 
 !-----------------------------------------------------------------------
 !ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
 !-----------------------------------------------------------------------
 
-    subroutine getcape(p_in_A , t_in_A , td_in_A, ps_in_B , ts_in_B , tds_in_B, &
+    subroutine getcape_pl(p_in_A , t_in_A , td_in_A, ps_in_B , ts_in_B , tds_in_B, &
       &pinc, source, ml_depth, adiabat, nk_in, cape , cin, MUlvl, z_out)
     implicit none
 
@@ -533,7 +533,7 @@
 !---- All done ----!
 
     return
-    end subroutine getcape
+    end subroutine getcape_pl
 
 !-----------------------------------------------------------------------
 !ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc

@@ -3,7 +3,7 @@
 
 python module Bunkers_model_lev ! in 
     interface  ! in :Bunkers_model_lev
-        subroutine loop(u3d,v3d,aglh3d,us,vs,aglhs,nk,n2,rm,lm,mean6kmwind) ! in :Bunkers_model_lev:Bunkers_model_lev.f90
+        subroutine bunkers_loop_ml(u3d,v3d,aglh3d,us,vs,aglhs,nk,n2,rm,lm,mean6kmwind) ! in :Bunkers_model_lev:Bunkers_model_lev.f90
             threadsafe 
             real dimension(nk,n2),intent(in) :: u3d
             real dimension(nk,n2),intent(in),depend(nk,n2) :: v3d
@@ -16,8 +16,8 @@ python module Bunkers_model_lev ! in
             real dimension(2,n2),intent(out),depend(n2) :: rm
             real dimension(2,n2),intent(out),depend(n2) :: lm
             real dimension(2,n2),intent(out),depend(n2) :: mean6kmwind
-        end subroutine loop
-        subroutine bunkers_calc(u,v,aglh,nk,rm,lm,mean6kmwind) ! in :Bunkers_model_lev:Bunkers_model_lev.f90
+        end subroutine bunkers_loop_ml
+        subroutine bunkers_calc_ml(u,v,aglh,nk,rm,lm,mean6kmwind) ! in :Bunkers_model_lev:Bunkers_model_lev.f90
             threadsafe 
             real dimension(nk),intent(in) :: u
             real dimension(nk),intent(in),depend(nk) :: v
@@ -26,7 +26,7 @@ python module Bunkers_model_lev ! in
             real dimension(2),intent(out) :: rm
             real dimension(2),intent(out) :: lm
             real dimension(2),intent(out) :: mean6kmwind
-        end subroutine bunkers_calc
+        end subroutine bunkers_calc_ml
         subroutine dinterp2dz(v3d,z,loc,v2d,n2,nz) ! in :Bunkers_model_lev:Bunkers_model_lev.f90
             threadsafe 
             real dimension(nz,n2),intent(in) :: v3d

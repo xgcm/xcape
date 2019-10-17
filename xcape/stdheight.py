@@ -16,13 +16,13 @@ def stdheight(p_2d, t_2d, td_2d, p_s, t_s, td_s, pres_lev_pos, aglh0, type_grid)
     # type_grid  type of vertical grid: 1 for model levels, 2 for pressure levels:
     if type_grid == 1:
         from xcape import stdheight_2D_model_lev
-        H2D, H_s  = stdheight_2D_model_lev.loop_stdheight(p_2d, t_2d, td_2d,
+        H2D, H_s  = stdheight_2D_model_lev.loop_stdheight_ml(p_2d, t_2d, td_2d,
                                                       p_s, t_s, td_s,
                                                       aglh_in,
                                                       nlev, ngrid)
     elif type_grid == 2:
         from xcape import stdheight_2D_pressure_lev
-        H2D, H_s  = stdheight_2D_pressure_lev.loop_stdheight(p_2d, t_2d, td_2d,
+        H2D, H_s  = stdheight_2D_pressure_lev.loop_stdheight_pl(p_2d, t_2d, td_2d,
                                                       p_s, t_s, td_s,
                                                       aglh_in,pres_lev_pos,
                                                       nlev, ngrid)

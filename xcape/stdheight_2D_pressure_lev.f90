@@ -2,7 +2,7 @@
 !-----------------------------------------------------------------------
 !ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
 !-----------------------------------------------------------------------
-      SUBROUTINE loop_stdheight(P,T,Td,Ps,Ts,Tds,Hin,start_3d,NK,NX, H,Hs)
+      SUBROUTINE loop_stdheight_pl(P,T,Td,Ps,Ts,Tds,Hin,start_3d,NK,NX, H,Hs)
       !f2py threadsafe
       !f2py intent(out) :: H
       IMPLICIT NONE
@@ -23,12 +23,12 @@
           IF (nk_start .GT. 1) THEN
               H(1:nk_start-1,i) = -999999
           ENDIF
-          call stdheight(P(nk_start:NK,i),T(nk_start:NK,i),Td(nk_start:NK,i),&
+          call stdheight_pl(P(nk_start:NK,i),T(nk_start:NK,i),Td(nk_start:NK,i),&
                         &Ps(i),Ts(i),Tds(i),Hin(i),nk_pl_in,&
                         &H(nk_start:NK,i),Hs(i))
       enddo
       return
-      end subroutine loop_stdheight
+      end subroutine loop_stdheight_pl
 
 
 !*********************************************************
@@ -40,7 +40,7 @@
 !Written by John T. Allen July 2015, Last Updated Jan 2016
 !*********************************************************
 
-      SUBROUTINE stdheight(P,T,Td,Ps,Ts,Tds,Hin,NK,H,Hs)
+      SUBROUTINE stdheight_pl(P,T,Td,Ps,Ts,Tds,Hin,NK,H,Hs)
       !f2py threadsafe
       !f2py intent(out) :: H
 
@@ -94,5 +94,5 @@
       ENDDO
 
       return
-      end subroutine stdheight
+      end subroutine stdheight_pl
 !END OF FILE STDHEIGHT.F

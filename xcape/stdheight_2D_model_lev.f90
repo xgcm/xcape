@@ -2,7 +2,7 @@
 !-----------------------------------------------------------------------
 !ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
 !-----------------------------------------------------------------------
-      SUBROUTINE loop_stdheight(P,T,Td,Ps,Ts,Tds,Hin,NK,NX,H,Hs)
+      SUBROUTINE loop_stdheight_ml(P,T,Td,Ps,Ts,Tds,Hin,NK,NX,H,Hs)
       !f2py threadsafe
       !f2py intent(out) :: H
       IMPLICIT NONE
@@ -15,11 +15,11 @@
       DOUBLE PRECISION, DIMENSION(NX), INTENT(OUT) :: Hs
 
       do i = 1, NX
-          call stdheight(P(:,i),T(:,i),Td(:,i),Ps(i),Ts(i),Tds(i),Hin(i),NK,&
+          call stdheight_ml(P(:,i),T(:,i),Td(:,i),Ps(i),Ts(i),Tds(i),Hin(i),NK,&
                         &H(:,i),Hs(i))
       enddo
       return
-      end subroutine loop_stdheight
+      end subroutine loop_stdheight_ml
 
 
 !*********************************************************
@@ -31,7 +31,7 @@
 !Written by John T. Allen July 2015, Last Updated Jan 2016
 !*********************************************************
 
-      SUBROUTINE stdheight(P,T,Td,Ps,Ts,Tds,Hin,NK,H,Hs)
+      SUBROUTINE stdheight_ml(P,T,Td,Ps,Ts,Tds,Hin,NK,H,Hs)
       !f2py threadsafe
       !f2py intent(out) :: H
 
@@ -85,5 +85,5 @@
       ENDDO
 
       return
-      end subroutine stdheight
+      end subroutine stdheight_ml
 !END OF FILE STDHEIGHT.F
