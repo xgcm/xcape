@@ -50,24 +50,6 @@ ext_stdh_ml = Extension(name = 'stdheight_2D_model_lev',
 ext_stdh_pl = Extension(name = 'stdheight_2D_pressure_lev',
                         sources = ['xcape/stdheight_2D_pressure_lev.pyf',
                                    'xcape/stdheight_2D_pressure_lev.f90'])
-# ext_cape_pl = Extension(name =  'xcape.Fortrancode',
-#                         sources = [ 'xcape/Bunkers_model_lev.f90',
-#                                     'xcape/Bunkers_model_lev.pyf',
-#                                     'xcape/Bunkers_pressure_lev.f90',
-#                                     'xcape/Bunkers_pressure_lev.pyf',
-#                                     'xcape/CAPE_CODE_model_lev.f90',
-#                                     'xcape/CAPE_CODE_model_lev.pyf',
-#                                     'xcape/CAPE_CODE_pressure_lev.f90',
-#                                     'xcape/CAPE_CODE_pressure_lev.pyf',
-#                                     'xcape/SREH_model_lev.f90',
-#                                     'xcape/SREH_model_lev.pyf',
-#                                     'xcape/SREH_pressure_lev.f90',
-#                                     'xcape/SREH_pressure_lev.pyf',
-#                                     'xcape/stdheight_2D_model_lev.f90',
-#                                     'xcape/stdheight_2D_model_lev.pyf',
-#                                     'xcape/stdheight_2D_pressure_lev.f90',
-#                                     'xcape/stdheight_2D_pressure_lev.pyf'])
-
 
 DESCRIPTION = "Fast convective parameters for numpy, dask, and xarray"
 def readme():
@@ -87,9 +69,6 @@ setup(name=DISTNAME,
       #python_requires=PYTHON_REQUIRES,
       url=URL,
       #packages=['xcape'],
-      # doesn't work for two extensions, only one
-      # https://stackoverflow.com/questions/17744604/cython-producing-duplicate-symbols-pyinit-and-pyx-module-is-main
-      #ext_modules = [ext_cape_ml, ext_cape_ml],
       ext_package='xcape',
       ext_modules = [ext_cape_ml, ext_cape_pl, 
                      ext_bunkers_ml, ext_bunkers_pl, 
