@@ -49,7 +49,7 @@
 
       DOUBLE PRECISION, PARAMETER :: R=287.04
       DOUBLE PRECISION, PARAMETER :: g=-9.80665
-      INTEGER, PARAMETER :: n = 10
+      !INTEGER, PARAMETER :: n = 10
       DOUBLE PRECISION, PARAMETER :: eps = 0.6219800858985514
       !PARAMETER (R=287.04,g=-9.80665)
       !Calculate Virtual Temperatures at the Two Levels and the mean of these two values.
@@ -62,7 +62,8 @@
       Tin=Ts+273.15
       !W calculation starting from dewpoint
       Tdin = Tds+273.15
-      E = 6.112*exp((17.67*(Tdin-273.15))/(Tds-29.65))
+      !E = 6.112*exp((17.67*(Tdin-273.15))/(Tdin-29.65))
+      E = 6.112*exp((53.49-(6808/Tdin)-5.09*log(Tdin)))
       w = eps*(E/(Ps-E))
       !Alt W calculation starting from specific humidity
       ! w = (qs/1000)/(1-(qs/1000))
@@ -76,7 +77,7 @@
         Tin=T(k)+273.15
         !Calculate w for each layer
         Tdin = Td(k)+273.15
-        ! E = 6.112*exp((17.67*(Tdin-273.15))/(Tds-29.65))
+        ! E = 6.112*exp((17.67*(Tdin-273.15))/(Tdin-29.65))
         E = 6.112*exp((53.49-(6808/Tdin)-5.09*log(Tdin)))
 
         w=eps*(E/(P(k)-E))
