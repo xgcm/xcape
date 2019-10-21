@@ -25,18 +25,17 @@ def _reshape_inputs(*args):
     args_al2d = [np.atleast_2d(a) for a in args]
     original_shape = args_al2d[0].shape
     # calc_cape needs input in shape (nlevs, npoints)
-    new_shape = (original_shape[0],) + (_prod(original_shape[1:]),)
-    args_2d = [np.reshape(a, new_shape) for a in args_al2d]
+    new_shape = (_prod(original_shape[:-1]),) + (original_shape[-1],)
+    # transpose to move nlevs to first axis
+    args_2d = [np.reshape(a, new_shape).transpose() for a in args_al2d]
     return args_2d
 
 def _reshape_outputs(*args, shape=None):
     if len(shape)==1:
         target_shape = (1,)
     else:
-        # 1 is in place of the level dimension
-        # shape[1:] is the remaining shape
-        target_shape = (1,) + shape[1:]
-    return [np.reshape(a, target_shape) for a in args]
+        target_shape = shape[:-1]
+    return [np.reshape(a.transpose(), target_shape) for a in args]
 
 def _reshape_outputs_uv_components(*args, shape=None):
     if len(shape)==1:

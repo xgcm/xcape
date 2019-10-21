@@ -19,9 +19,9 @@ def p_t_td_1d(nlevs=20):
 
 @pytest.fixture(scope='module')
 def p_t_td_3d(nlevs=20, nx=10, ny=5):
-    p = np.random.rand(nlevs, ny, nx)
-    t = np.random.rand(nlevs, ny, nx)
-    td = np.random.rand(nlevs, ny, nx)
+    p = np.random.rand(ny, nx, nlevs)
+    t = np.random.rand(ny, nx, nlevs)
+    td = np.random.rand(ny, nx, nlevs)
     return p, t, td
 
 @pytest.fixture(scope='module')
@@ -42,7 +42,7 @@ def test_calc_cape_shape_3d(p_t_td_3d, p_t_td_surface, sourcein, n_returns):
     assert len(result) == n_returns
 
     for data in result:
-        assert data.shape == (1, p.shape[1], p.shape[2])
+        assert data.shape == p.shape[:-1]
 
 # tolerance for tests
 decimal_cape = 0
