@@ -9,14 +9,14 @@ def cape(p_2d, t_2d, td_2d, p_s, t_s, td_s, pres_lev_pos, source, ml_depth, adia
     if type_grid == 1:
         from xcape import CAPE_CODE_model_lev
     
-        CAPE, CIN, MUlev, zMUlev = CAPE_CODE_model_lev.loopcape(p_2d, t_2d, td_2d,
+        CAPE, CIN, MUlev, zMUlev = CAPE_CODE_model_lev.loopcape_ml(p_2d, t_2d, td_2d,
                                                       p_s, t_s, td_s,
                                                       pinc, source, ml_depth, adiabat,
                                                       nlev, ngrid)
     elif type_grid == 2:
         from xcape import CAPE_CODE_pressure_lev
     
-        CAPE, CIN, MUlev, zMUlev = CAPE_CODE_pressure_lev.loopcape(p_2d, t_2d, td_2d,
+        CAPE, CIN, MUlev, zMUlev = CAPE_CODE_pressure_lev.loopcape_pl(p_2d, t_2d, td_2d,
                                                           p_s, t_s, td_s,
                                                           pinc, source, ml_depth, adiabat,
                                                           pres_lev_pos,
