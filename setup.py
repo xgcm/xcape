@@ -27,24 +27,20 @@ CLASSIFIERS = [
 INSTALL_REQUIRES = ['xarray>=0.12.0', 'dask', 'numpy>=1.16']
 PYTHON_REQUIRES = '>=3.6'
 
-try:
-        # figure out which compiler we're going to use
-        compiler = get_default_fcompiler()
-        # set some fortran compiler-dependent flags
-        f90flags = []
-        if compiler == 'gnu95':
-            f90flags.append('-fno-range-check')
-            f90flags.append('-ffree-form')
-        elif compiler == 'intel' or compiler == 'intelem':
-            f90flags.append('-132')
-        #  Set aggressive optimization level
-        f90flags.append('-O3')
-        #  Suppress all compiler warnings (avoid huge CI log files)
-        f90flags.append('-w')
-except :
-        print('No Fortran compiler found, not building the RRTMG_LW radiation module!')
-        build = False
-print(f90flags)
+
+# figure out which compiler we're going to use
+compiler = get_default_fcompiler()
+# set some fortran compiler-dependent flags
+f90flags = []
+if compiler == 'gnu95':
+    f90flags.append('-fno-range-check')
+    f90flags.append('-ffree-form')
+elif compiler == 'intel' or compiler == 'intelem':
+    f90flags.append('-132')
+#  Set aggressive optimization level
+f90flags.append('-O3')
+#  Suppress all compiler warnings (avoid huge CI log files)
+f90flags.append('-w')
 
 ext_cape_ml = Extension(name = 'CAPE_CODE_model_lev',
                         sources = ['xcape/CAPE_CODE_model_lev.pyf',
