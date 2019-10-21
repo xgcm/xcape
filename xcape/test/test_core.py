@@ -54,18 +54,18 @@ def test_calc_surface_cape_model_lev(dataset_soundings):
     """Test Surface Cape based on previously calculated using George Bryans code"""
     ds = dataset_soundings
 
-    cape, cin = calc_cape(ds.pressure.values[1:],
-                          ds.temperature.values[1:],
-                          ds.dewpoint.values[1:],
-                          ds.pressure.values[0],
-                          ds.temperature.values[0],
-                          ds.dewpoint.values[0],
+    cape, cin = calc_cape(ds.pressure.values[:, 1:],
+                          ds.temperature.values[:, 1:],
+                          ds.dewpoint.values[:, 1:],
+                          ds.pressure.values[:, 0],
+                          ds.temperature.values[:, 0],
+                          ds.dewpoint.values[:, 0],
                           source='surface', ml_depth=500., adiabat='pseudo-liquid',
                           pinc=100.,
                           method='fortran', vertical_lev='sigma', pres_lev_pos=1)
 
-    np.testing.assert_almost_equal(cape[0], ds.SB_CAPE_pinc100.values, decimal_cape)
-    np.testing.assert_almost_equal(cin[0], ds.SB_CIN_pinc100.values, decimal_cin)
+    np.testing.assert_almost_equal(cape, ds.SB_CAPE_pinc100.values, decimal_cape)
+    np.testing.assert_almost_equal(cin, ds.SB_CIN_pinc100.values, decimal_cin)
 
 def test_calc_most_unstable_cape_model_lev(dataset_soundings):
     """Test Surface Cape based on previously calculated using George Bryans code"""

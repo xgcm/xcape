@@ -140,7 +140,7 @@ def calc_cape(p, t, td, ps, ts, tds, source='surface', ml_depth=500., adiabat='p
 
     # after this, all arrays are 2d shape (nlevs, npoints)
     p_2d, t_2d, td_2d = _reshape_inputs(p, t, td)
-    p_s1d, t_s1d, td_s1d = _reshape_inputs(ps, ts, tds)
+    p_s1d, t_s1d, td_s1d = _reshape_surface_inputs(ps, ts, tds)
 
     _source_options_ ={'surface':1, 'most-unstable':2, 'mixed-layer':3}
     _adiabat_options_ ={'pseudo-liquid':1, 'reversible-liquid':2,
@@ -168,7 +168,8 @@ def calc_cape(p, t, td, ps, ts, tds, source='surface', ml_depth=500., adiabat='p
     else:
         raise ValueError('invalid method')
 
-
+    print('cape_2d.shape', cape_2d.shape)
+    print(cape_2d)
     if _source_options_[source]==2:
         cape, cin, mulev, zmulev = _reshape_outputs(cape_2d, cin_2d, mulev, zmulev, shape=original_shape)
         return cape, cin, mulev, zmulev
