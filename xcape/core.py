@@ -25,18 +25,17 @@ def _reshape_inputs(*args):
     args_al2d = [np.atleast_2d(a) for a in args]
     original_shape = args_al2d[0].shape
     # calc_cape needs input in shape (nlevs, npoints)
-    new_shape = (original_shape[0],) + (_prod(original_shape[1:]),)
-    args_2d = [np.reshape(a, new_shape) for a in args_al2d]
+    new_shape = (_prod(original_shape[:-1]),) + (original_shape[-1],)
+    # transpose to move nlevs to first axis
+    args_2d = [np.reshape(a, new_shape).transpose() for a in args_al2d]
     return args_2d
 
 def _reshape_outputs(*args, shape=None):
     if len(shape)==1:
         target_shape = (1,)
     else:
-        # 1 is in place of the level dimension
-        # shape[1:] is the remaining shape
-        target_shape = (1,) + shape[1:]
-    return [np.reshape(a, target_shape) for a in args]
+        target_shape = shape[:-1]
+    return [np.reshape(a.transpose(), target_shape) for a in args]
 
 def _reshape_outputs_uv_components(*args, shape=None):
     if len(shape)==1:
@@ -44,7 +43,7 @@ def _reshape_outputs_uv_components(*args, shape=None):
     else:
         # 1 is in place of the level dimension
         # shape[1:] is the remaining shape
-        target_shape = (2,) + shape[1:]
+        target_shape = (2,) + shape[:-1]
     return [np.reshape(a, target_shape) for a in args]
 
 def _reshape_surface_inputs(*args):
@@ -62,19 +61,10 @@ def _reshape_surface_inputs(*args):
     args_1d = [np.reshape(a, new_shape) for a in args_al1d]
     return args_1d
 
-def _reshape_surface_outputs(*args, shape=None):
-    # calc_cape needs input in shape (nlevs, npoints)
-
-    if len(shape)==1:
-        target_shape = (1,)
-    else:
-        target_shape = (1,) + shape[1:]
-    return [np.reshape(a, target_shape) for a in args]
-
-def _reshape_outputs_stdheight(*args, shape=None):
-    # calc_cape needs input in shape (nlevs, npoints)
-    target_shape = shape
-    return [np.reshape(a, target_shape) for a in args]
+# def _reshape_outputs_stdheight(*args, shape=None):
+#     # calc_cape needs input in shape (nlevs, npoints)
+#     target_shape = shape
+#     return [np.reshape(a, target_shape) for a in args]
 
 def _cape_dummy(p, t, td, ps, ts, tds, pres_lev_pos,
                 source, ml_depth, adiabat, pinc, type_grid):
@@ -141,7 +131,6 @@ def calc_cape(p, t, td, ps, ts, tds, source='surface', ml_depth=500., adiabat='p
 
     # after this, all arrays are 2d shape (nlevs, npoints)
     p_2d, t_2d, td_2d = _reshape_inputs(p, t, td)
-    # after this, all surface arrays are 1d shape (npoints)
     p_s1d, t_s1d, td_s1d = _reshape_surface_inputs(ps, ts, tds)
 
     _source_options_ ={'surface':1, 'most-unstable':2, 'mixed-layer':3}
@@ -170,7 +159,8 @@ def calc_cape(p, t, td, ps, ts, tds, source='surface', ml_depth=500., adiabat='p
     else:
         raise ValueError('invalid method')
 
-
+    print('cape_2d.shape', cape_2d.shape)
+    print(cape_2d)
     if _source_options_[source]==2:
         cape, cin, mulev, zmulev = _reshape_outputs(cape_2d, cin_2d, mulev, zmulev, shape=original_shape)
         return cape, cin, mulev, zmulev

@@ -3270,4 +3270,5 @@ def dataset_soundings():
  'dims': {'level': 108, 'n2': 13}}
 
     ds = xr.Dataset.from_dict(dtemp)
+    ds = ds.transpose()
     return ds
