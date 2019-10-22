@@ -4,6 +4,7 @@ Numpy API for xcape.
 
 from functools import reduce
 import numpy as np
+import dask.array as da
 from .duck_array_ops import (reshape, ravel_multi_index, concatenate,
                              broadcast_arrays)
 
@@ -79,8 +80,11 @@ def _cape_dummy(p, t, td, ps, ts, tds, pres_lev_pos,
     zmulev = np.ones((1, shape[1]))
     return cape, cin, mulev, zmulev
 
-def calc_cape(p, t, td, ps, ts, tds, source='surface', ml_depth=500., adiabat='pseudo-liquid',
-         pinc=1000., method='fortran', vertical_lev='sigma', pres_lev_pos=1):
+
+def _any_dask_array(*args):
+    return any([isinstance(a, da.Array) for a in args])
+
+def calc_cape(p, t, td, ps, ts, tds, **kwargs):
     """
     Calculate cape for a set of profiles over the first axis of the arrays.
 
@@ -125,6 +129,33 @@ def calc_cape(p, t, td, ps, ts, tds, source='surface', ml_depth=500., adiabat='p
     zMUlev : array-like
         height of MUlev (m)
      """
+    
+    if _any_dask_array(p, t, td, ps, ts, tds):
+        return _calc_cape_gufunc(p, t, td, ps, ts, tds, **kwargs)
+    else:
+        return _calc_cape_numpy(p, t, td, ps, ts, tds, **kwargs)
+    
+
+def _calc_cape_gufunc(p, t, td, ps, ts, tds, **kwargs):
+    signature = "(i),(i),(i),(),(),()->(),()"
+    output_dtypes = ('f4','f4')
+    if kwargs['source']=='most-unstable':
+        signature += ",(),()"
+        output_dtypes = output_dtype + ('i4','f4')
+        
+    return da.apply_gufunc(_calc_cape_numpy, signature,
+                           p, t, td, ps, ts, tds,
+                           output_dtypes=('f4','f4'),
+                           axis=-1,
+                           vectorize=False,
+                           **kwargs)
+
+
+# the numpy version of the algorithm
+def _calc_cape_numpy(p, t, td, ps, ts, tds, source='surface', ml_depth=500.,
+                     adiabat='pseudo-liquid',pinc=1000., method='fortran',
+                     vertical_lev='sigma', pres_lev_pos=1):
+
 
     original_shape = p.shape
     original_surface_shape = ps.shape
