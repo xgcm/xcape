@@ -67,7 +67,7 @@ def _reshape_surface_inputs(*args):
 #     target_shape = shape
 #     return [np.reshape(a, target_shape) for a in args]
 
-def _cape_dummy(p, t, td, ps, ts, tds, pres_lev_pos,
+def _cape_dummy(p, t, td, ps, ts, tds,
                 source, ml_depth, adiabat, pinc, type_grid):
     # cape is a reduction along the second axis.
     # this tests that reshaping works.
@@ -84,7 +84,7 @@ def _cape_dummy(p, t, td, ps, ts, tds, pres_lev_pos,
 def _any_dask_array(*args):
     return any([isinstance(a, da.Array) for a in args])
 
-def calc_cape(p, t, td, ps, ts, tds, **kwargs):
+def calc_cape(p, t, td, ps, ts, tds, *args, **kwargs):
     """
     Calculate cape for a set of profiles over the first axis of the arrays.
 
@@ -104,6 +104,10 @@ def calc_cape(p, t, td, ps, ts, tds, **kwargs):
         Surface Temperature in Celsius
     tds : array-like
         Surface Dew point temperature in Celsius
+    pres_lev_pos :  array-like, optional
+        location in fortran values (1: nlev) of where p <= ps.
+        When vertical_lev='model', pres_lev_pos is set to a flag = 1
+        When vertical_lev='pressure', pres_lev_pos.shape = ps.shape
     source : {'surface', 'most-unstable', 'mixed-layer'}
     ml_depth : float, optional
         Depth (m) of mixed layer. Only applies when source='mixed-layer'
@@ -114,10 +118,6 @@ def calc_cape(p, t, td, ps, ts, tds, **kwargs):
         Which numerical routine to use
     vertical_lev : {'sigma', 'pressure'}
         Which vertical grid is used
-    pres_lev_pos :  array-like,
-        location in fortran values (1: nlev) of where p <= ps.
-        When vertical_lev='model', pres_lev_pos = 1
-        When vertical_lev='pressure', pres_lev_pos.shape = ps.shape
     Returns
     -------
     cape : array-like
@@ -129,32 +129,65 @@ def calc_cape(p, t, td, ps, ts, tds, **kwargs):
     zMUlev : array-like
         height of MUlev (m)
      """
-    
-    if _any_dask_array(p, t, td, ps, ts, tds):
-        return _calc_cape_gufunc(p, t, td, ps, ts, tds, **kwargs)
-    else:
-        return _calc_cape_numpy(p, t, td, ps, ts, tds, **kwargs)
-    
-
-def _calc_cape_gufunc(p, t, td, ps, ts, tds, **kwargs):
-    signature = "(i),(i),(i),(),(),()->(),()"
-    output_dtypes = ('f4','f4')
-    if kwargs['source']=='most-unstable':
-        signature += ",(),()"
-        output_dtypes = output_dtypes + ('i4','f4')
+    if len(args)>1:
+        print('too many optional arguments')
         
-    return da.apply_gufunc(_calc_cape_numpy, signature,
-                           p, t, td, ps, ts, tds,
-                           output_dtypes=('f4','f4'),
-                           axis=-1,
-                           vectorize=False,
-                           **kwargs)
+    elif kwargs['vertical_lev']!=True:
+        print('please select type of vertical grid, pressure level, or model level')
+        
+    elif (len(args)==0)&(kwargs['vertical_lev'] == 'pressure'):
+        print('vertical grid is set to pressure levels,\n'+
+                +'but location in fortran values (1: nlev) of where p <= ps is missing')
+        
+    elif (len(args)==1)&(args[0].shape!=ps.shape)&(kwargs['vertical_lev'] == 'pressure'):
+        print('vertical grid is set to pressure levels,\n'+
+                +'but location in fortran values (1: nlev) of where p <= ps is not the correct shape\n'+
+                +'(pres_lev_pos.shape should be equal to ps.shape)')
+        
+        
+    if _any_dask_array(p, t, td, ps, ts, tds):
+        return _calc_cape_gufunc(p, t, td, ps, ts, tds, *args, **kwargs)
+    else:
+        return _calc_cape_numpy(p, t, td, ps, ts, tds, *args, **kwargs)
+    
 
+def _calc_cape_gufunc(p, t, td, ps, ts, tds, *args, **kwargs):
+    
+    if (kwargs['vertical_lev']=='sigma'):
+        signature = "(i),(i),(i),(),(),()->(),()"
+        output_dtypes = ('f4','f4')
+        if kwargs['source']=='most-unstable':
+            signature += ",(),()"
+            output_dtypes = output_dtypes + ('i4','f4')
+
+        return da.apply_gufunc(_calc_cape_numpy, signature,
+                               p, t, td, ps, ts, tds, 
+                               output_dtypes=('f4','f4'),
+                               axis=-1,
+                               vectorize=False,
+                               **kwargs)
+    
+    elif (kwargs['vertical_lev']=='pressure'):
+        print('here')
+        pres_lev_pos = args[0]
+        signature = "(i),(i),(i),(),(),(),()->(),()"
+        output_dtypes = ('f4','f4')
+        if kwargs['source']=='most-unstable':
+            signature += ",(),()"
+            output_dtypes = output_dtypes + ('i4','f4')
+
+        return da.apply_gufunc(_calc_cape_numpy, signature,
+                               p, t, td, ps, ts, tds, pres_lev_pos,
+                               output_dtypes=('f4','f4'),
+                               axis=-1,
+                               vectorize=False,
+                               **kwargs)
 
 # the numpy version of the algorithm
-def _calc_cape_numpy(p, t, td, ps, ts, tds, source='surface', ml_depth=500.,
-                     adiabat='pseudo-liquid',pinc=1000., method='fortran',
-                     vertical_lev='sigma', pres_lev_pos=1):
+def _calc_cape_numpy(p, t, td, ps, ts, tds, *args, 
+                     source='surface', ml_depth=500.,
+                     adiabat='pseudo-liquid',pinc=500., method='fortran',
+                     vertical_lev='sigma'):
 
 
     original_shape = p.shape
@@ -162,7 +195,12 @@ def _calc_cape_numpy(p, t, td, ps, ts, tds, source='surface', ml_depth=500.,
 
     # after this, all arrays are 2d shape (nlevs, npoints)
     p_2d, t_2d, td_2d = _reshape_inputs(p, t, td)
-    p_s1d, t_s1d, td_s1d = _reshape_surface_inputs(ps, ts, tds)
+    
+    if len(args)==0:
+        pres_lev_pos=1
+        p_s1d, t_s1d, td_s1d = _reshape_surface_inputs(ps, ts, tds)
+    elif len(args)==1:
+        p_s1d, t_s1d, td_s1d, pres_lev_pos = _reshape_surface_inputs(ps, ts, tds, args[0])
 
     _source_options_ ={'surface':1, 'most-unstable':2, 'mixed-layer':3}
     _adiabat_options_ ={'pseudo-liquid':1, 'reversible-liquid':2,
@@ -180,18 +218,16 @@ def _calc_cape_numpy(p, t, td, ps, ts, tds, source='surface', ml_depth=500.,
                                                        p_s1d, t_s1d, td_s1d,
                                                        pres_lev_pos,
                                                        **kwargs)
-    elif method == 'numba':
-        cape_2d, cin_2d = _cape_numba(p_2d, t_2d, td_2d, **kwargs)
+#     elif method == 'numba':
+#         cape_2d, cin_2d = _cape_numba(p_2d, t_2d, td_2d, **kwargs)
     elif method == 'dummy':
         cape_2d, cin_2d, mulev, zmulev = _cape_dummy(p_2d, t_2d, td_2d,
                                                      p_s1d, t_s1d, td_s1d,
-                                                     pres_lev_pos,
                                                      **kwargs)
     else:
         raise ValueError('invalid method')
 
-    print('cape_2d.shape', cape_2d.shape)
-    print(cape_2d)
+    
     if _source_options_[source]==2:
         cape, cin, mulev, zmulev = _reshape_outputs(cape_2d, cin_2d, mulev, zmulev, shape=original_shape)
         return cape, cin, mulev, zmulev

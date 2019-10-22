@@ -37,13 +37,17 @@ def p_t_td_surface(nx=10, ny=5):
 @pytest.mark.parametrize('use_dask', [False, True])
 @pytest.mark.parametrize('sourcein,n_returns',
                          [('surface', 2), ('most-unstable', 4)])
-def test_calc_cape_shape_3d(p_t_td_3d, p_t_td_surface, sourcein, n_returns, use_dask):
+@pytest.mark.parametrize('vertical_levin', ['sigma', 'pressure'])
+def test_calc_cape_shape_3d(p_t_td_3d, p_t_td_surface, sourcein, n_returns, use_dask,vertical_levin):
     p, t, td = p_t_td_3d
     ps, ts, tds = p_t_td_surface
-    args = (p, t, td, ps, ts, tds)
+    if vertical_levin=='sigma':
+        args = (p, t, td, ps, ts, tds)
+    elif vertical_levin =='pressure':        
+        args = (p, t, td, ps, ts, tds,ps*0+1)
     if use_dask:
         args = [dsa.from_array(a) for a in args]
-    result = calc_cape(*args, source=sourcein, method='dummy')
+    result = calc_cape(*args, source=sourcein,vertical_lev=vertical_levin, method='dummy')
     assert len(result) == n_returns
     for data in result:
         assert data.shape == p.shape[:-1]
@@ -59,122 +63,67 @@ decimal_mulv = 0
 decimal_zmulv = 0
 
 @pytest.mark.parametrize('use_dask', [False, True])
-def test_calc_surface_cape_model_lev(dataset_soundings, use_dask):
+@pytest.mark.parametrize('sourcein, pinc_used',
+                         [('surface', 100),('mixed-layer',1000),('most-unstable', 100)])
+@pytest.mark.parametrize('vertical_levin', ['sigma', 'pressure'])
+def test_calc_surface_cape_lev(dataset_soundings, sourcein, pinc_used, use_dask,vertical_levin):
     """Test Surface Cape based on previously calculated using George Bryans code"""
     ds = dataset_soundings
     if use_dask:
         ds = ds.chunk()
-
-    cape, cin = calc_cape(ds.pressure.data[:, 1:],
-                          ds.temperature.data[:, 1:],
-                          ds.dewpoint.data[:, 1:],
-                          ds.pressure.data[:, 0],
-                          ds.temperature.data[:, 0],
-                          ds.dewpoint.data[:, 0],
-                          source='surface', ml_depth=500., adiabat='pseudo-liquid',
-                          pinc=100.,
-                          method='fortran', vertical_lev='sigma', pres_lev_pos=1)
-    if use_dask:
-        assert isinstance(cape, dsa.Array)
-        assert isinstance(cin, dsa.Array)
-        cape, cin = dask.compute(cape, cin)
-
-    np.testing.assert_almost_equal(cape, ds.SB_CAPE_pinc100.values, decimal_cape)
-    np.testing.assert_almost_equal(cin, ds.SB_CIN_pinc100.values, decimal_cin)
-
-def test_calc_most_unstable_cape_model_lev(dataset_soundings):
-    """Test Surface Cape based on previously calculated using George Bryans code"""
-    ds = dataset_soundings
-
-    # in real data, the surface values will come in separate variables
-    cape, cin, mulv, zmulv = calc_cape(ds.pressure.values[:, 1:],
-                          ds.temperature.values[:, 1:],
-                          ds.dewpoint.values[:, 1:],
-                          ds.pressure.values[:, 0],
-                          ds.temperature.values[:, 0],
-                          ds.dewpoint.values[:, 0],
-                          source='most-unstable', ml_depth=500., adiabat='pseudo-liquid',
-                          pinc=100.,
-                          method='fortran', vertical_lev='sigma', pres_lev_pos=1)
-
-    np.testing.assert_almost_equal(cape, ds.MU_CAPE_pinc100.values, decimal_cape)
-    np.testing.assert_almost_equal(cin, ds.MU_CIN_pinc100.values, decimal_cin)
-    np.testing.assert_almost_equal(mulv, ds.MU_lv_pinc100.values.astype('int32'), decimal_mulv)
-    np.testing.assert_almost_equal(zmulv, ds.MU_z_pinc100.values, decimal_zmulv)
-
-def test_calc_mixed_layer_cape_model_lev(dataset_soundings):
-    """Test Surface Cape based on previously calculated using George Bryans code"""
-    ds = dataset_soundings
-
-    cape, cin = calc_cape(ds.pressure.values[:, 1:],
-                          ds.temperature.values[:, 1:],
-                          ds.dewpoint.values[:, 1:],
-                          ds.pressure.values[:, 0],
-                          ds.temperature.values[:, 0],
-                          ds.dewpoint.values[:, 0],
-                          source='mixed-layer', ml_depth=500., adiabat='pseudo-liquid',
-                          pinc=1000.,
-                          method='fortran', vertical_lev='sigma', pres_lev_pos=1)
-
-    np.testing.assert_almost_equal(cape, ds.ML_CAPE_pinc1000_mldepth500.values, decimal_cape)
-    np.testing.assert_almost_equal(cin, ds.ML_CIN_pinc1000_mldepth500.values, decimal_cin)
-
-def test_calc_surface_cape_pressure_lev(dataset_soundings):
-    """Test Surface Cape based on previously calculated using George Bryans code"""
-    ds = dataset_soundings
+    if vertical_levin=='sigma':
+        returns = calc_cape(ds.pressure.data[:, 1:],
+                              ds.temperature.data[:, 1:],
+                              ds.dewpoint.data[:, 1:],
+                              ds.pressure.data[:, 0],
+                              ds.temperature.data[:, 0],
+                              ds.dewpoint.data[:, 0],
+                              source=sourcein, ml_depth=500., adiabat='pseudo-liquid',
+                              pinc=pinc_used,
+                              method='fortran', vertical_lev=vertical_levin)
+    elif  vertical_levin=='pressure':
+        returns = calc_cape(ds.pressure.data[:, 1:],
+                              ds.temperature.data[:, 1:],
+                              ds.dewpoint.data[:, 1:],
+                              ds.pressure.data[:, 0],
+                              ds.temperature.data[:, 0],
+                              ds.dewpoint.data[:, 0],
+                              ds.pressure.data[:,0]*0+1, #pres_lev_pos
+                              source=sourcein, ml_depth=500., adiabat='pseudo-liquid',
+                              pinc=pinc_used,
+                              method='fortran', vertical_lev=vertical_levin)
     
-    cape, cin = calc_cape(ds.pressure.values[:, 1:],
-                          ds.temperature.values[:, 1:],
-                          ds.dewpoint.values[:, 1:],
-                          ds.pressure.values[:, 0],
-                          ds.temperature.values[:, 0],
-                          ds.dewpoint.values[:, 0],
-                          source='surface', ml_depth=500., adiabat='pseudo-liquid',
-                          pinc=100.,
-                          method='fortran', vertical_lev='pressure', 
-                          pres_lev_pos=ds.pressure.values[:,0]*0+1)
+    if sourcein=='mixed_layer':
+        cape = returns[0]
+        cin = returns[1]
+        mulv = returns[2] 
+        zmulv = returns[3] 
+        if use_dask:
+            assert isinstance(cape, dsa.Array)
+            assert isinstance(cin, dsa.Array)
+            assert isinstance(mulv, dsa.Array)
+            assert isinstance(zmulv, dsa.Array)
+            cape, cin, mulv, zmulv = dask.compute(cape, cin, mulv, zmulv)
 
-    np.testing.assert_almost_equal(cape, ds.SB_CAPE_pinc100.values, decimal_cape)
-    np.testing.assert_almost_equal(cin, ds.SB_CIN_pinc100.values, decimal_cin)
+        np.testing.assert_almost_equal(cape, ds.MU_CAPE_pinc100.values, decimal_cape)
+        np.testing.assert_almost_equal(cin, ds.MU_CIN_pinc100.values, decimal_cin)
+        np.testing.assert_almost_equal(mulv, ds.MU_lv_pinc100.values.astype('int32'), decimal_mulv)
+        np.testing.assert_almost_equal(zmulv, ds.MU_z_pinc100.values, decimal_zmulv)
+    else:
+        cape = returns[0]
+        cin = returns[1]
+        if use_dask:
+            assert isinstance(cape, dsa.Array)
+            assert isinstance(cin, dsa.Array)
+            cape, cin = dask.compute(cape, cin)
+        if sourcein=='surface':
+            np.testing.assert_almost_equal(cape, ds.SB_CAPE_pinc100.values, decimal_cape)
+            np.testing.assert_almost_equal(cin, ds.SB_CIN_pinc100.values, decimal_cin)
+        elif sourcein=='mixed-layer':
+            np.testing.assert_almost_equal(cape, ds.ML_CAPE_pinc1000_mldepth500.values, decimal_cape)
+            np.testing.assert_almost_equal(cin, ds.ML_CIN_pinc1000_mldepth500.values, decimal_cin)
 
-def test_calc_most_unstable_cape_pressure_lev(dataset_soundings):
-    """Test Surface Cape based on previously calculated using George Bryans code"""
-    ds = dataset_soundings
-
-    # in real data, the surface values will come in separate variables
-    cape, cin, mulv, zmulv = calc_cape(ds.pressure.values[:, 1:],
-                          ds.temperature.values[:, 1:],
-                          ds.dewpoint.values[:, 1:],
-                          ds.pressure.values[:, 0],
-                          ds.temperature.values[:, 0],
-                          ds.dewpoint.values[:, 0],
-                          source='most-unstable', ml_depth=500., adiabat='pseudo-liquid',
-                          pinc=100.,
-                          method='fortran', vertical_lev='pressure', 
-                          pres_lev_pos=ds.pressure.values[:,0]*0+1)
-
-    np.testing.assert_almost_equal(cape, ds.MU_CAPE_pinc100.values, decimal_cape)
-    np.testing.assert_almost_equal(cin, ds.MU_CIN_pinc100.values, decimal_cin)
-    np.testing.assert_almost_equal(mulv, ds.MU_lv_pinc100.values.astype('int32'), decimal_mulv)
-    np.testing.assert_almost_equal(zmulv, ds.MU_z_pinc100.values, decimal_zmulv)
-
-def test_calc_mixed_layer_cape_pressure_lev(dataset_soundings):
-    """Test Surface Cape based on previously calculated using George Bryans code"""
-    ds = dataset_soundings
-
-    cape, cin = calc_cape(ds.pressure.values[:, 1:],
-                          ds.temperature.values[:, 1:],
-                          ds.dewpoint.values[:, 1:],
-                          ds.pressure.values[:, 0],
-                          ds.temperature.values[:, 0],
-                          ds.dewpoint.values[:, 0],
-                          source='mixed-layer', ml_depth=500., adiabat='pseudo-liquid',
-                          pinc=1000.,
-                          method='fortran', vertical_lev='pressure', 
-                          pres_lev_pos=ds.pressure.values[:, 0]*0+1)
-
-    np.testing.assert_almost_equal(cape, ds.ML_CAPE_pinc1000_mldepth500.values, decimal_cape)
-    np.testing.assert_almost_equal(cin, ds.ML_CIN_pinc1000_mldepth500.values, decimal_cin)
+        
 
     
 def test_calc_srh_model_lev(dataset_soundings):
