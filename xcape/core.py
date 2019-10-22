@@ -141,7 +141,7 @@ def _calc_cape_gufunc(p, t, td, ps, ts, tds, **kwargs):
     output_dtypes = ('f4','f4')
     if kwargs['source']=='most-unstable':
         signature += ",(),()"
-        output_dtypes = output_dtype + ('i4','f4')
+        output_dtypes = output_dtypes + ('i4','f4')
         
     return da.apply_gufunc(_calc_cape_numpy, signature,
                            p, t, td, ps, ts, tds,
