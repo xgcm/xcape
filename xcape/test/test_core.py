@@ -66,7 +66,7 @@ decimal_zmulv = 0
 @pytest.mark.parametrize('sourcein, pinc_used',
                          [('surface', 100),('mixed-layer',1000),('most-unstable', 100)])
 @pytest.mark.parametrize('vertical_levin', ['sigma', 'pressure'])
-def test_calc_surface_cape_lev(dataset_soundings, sourcein, pinc_used, use_dask,vertical_levin):
+def test_calc_cape(dataset_soundings, sourcein, pinc_used, use_dask,vertical_levin):
     """Test Surface Cape based on previously calculated using George Bryans code"""
     ds = dataset_soundings
     if use_dask:
@@ -93,7 +93,7 @@ def test_calc_surface_cape_lev(dataset_soundings, sourcein, pinc_used, use_dask,
                               pinc=pinc_used,
                               method='fortran', vertical_lev=vertical_levin)
     
-    if sourcein=='mixed_layer':
+    if sourcein=='most-unstable':
         cape = returns[0]
         cin = returns[1]
         mulv = returns[2] 
@@ -125,71 +125,65 @@ def test_calc_surface_cape_lev(dataset_soundings, sourcein, pinc_used, use_dask,
 
         
 
-    
-def test_calc_srh_model_lev(dataset_soundings):
+@pytest.mark.parametrize('use_dask', [False, True])
+@pytest.mark.parametrize('output_var_in, n_returns',
+                         [('srh',1)])
+#                          [('all', 4),('srh',1)])
+@pytest.mark.parametrize('vertical_levin', ['sigma', 'pressure'])
+def test_calc_srh(dataset_soundings, output_var_in, n_returns, use_dask, vertical_levin):
     """Test SRH code"""
     ds = dataset_soundings
+    if use_dask:
+        ds = ds.chunk()
+    if vertical_levin=='sigma':
+        returns = calc_srh(ds.pressure.data[:,1:],
+                              ds.temperature.data[:,1:],
+                              ds.dewpoint.data[:,1:],
+                              ds.u_wind_ms.data[:,1:],
+                              ds.v_wind_ms.data[:,1:],                         
+                              ds.pressure.data[:,0],
+                              ds.temperature.data[:,0],
+                              ds.dewpoint.data[:,0],
+                              ds.u_wind_ms.data[:,0],
+                              ds.v_wind_ms.data[:,0],
+                              depth = 3000,
+                              vertical_lev='sigma', 
+                              output_var=output_var_in)
+    elif  vertical_levin=='pressure':
+        returns = calc_srh(ds.pressure.data[:,1:],
+                              ds.temperature.data[:,1:],
+                              ds.dewpoint.data[:,1:],
+                              ds.u_wind_ms.data[:,1:],
+                              ds.v_wind_ms.data[:,1:],                         
+                              ds.pressure.data[:,0],
+                              ds.temperature.data[:,0],
+                              ds.dewpoint.data[:,0],
+                              ds.u_wind_ms.data[:,0],
+                              ds.v_wind_ms.data[:,0],
+                              ds.pressure.data[:,0]*0+1, #pres_lev_pos
+                              depth = 3000,
+                              vertical_lev='sigma', 
+                              output_var=output_var_in)
+        
 
-    srh, rm, lm, mean_6km = calc_srh(ds.pressure.values[:,1:],
-                          ds.temperature.values[:,1:],
-                          ds.dewpoint.values[:,1:],
-                          ds.u_wind_ms.values[:,1:],
-                          ds.v_wind_ms.values[:,1:],                         
-                          ds.pressure.values[:,0],
-                          ds.temperature.values[:,0],
-                          ds.dewpoint.values[:,0],
-                          ds.u_wind_ms.values[:,0],
-                          ds.v_wind_ms.values[:,0],
-                          depth = 3000,
-                          vertical_lev='sigma', pres_lev_pos=1,
-                          output_var='all')
-    srh2 = calc_srh(ds.pressure.values[:,1:],
-                          ds.temperature.values[:,1:],
-                          ds.dewpoint.values[:,1:],
-                          ds.u_wind_ms.values[:,1:],
-                          ds.v_wind_ms.values[:,1:],                         
-                          ds.pressure.values[:,0],
-                          ds.temperature.values[:,0],
-                          ds.dewpoint.values[:,0],
-                          ds.u_wind_ms.values[:,0],
-                          ds.v_wind_ms.values[:,0],
-                          depth = 3000,
-                          vertical_lev='sigma', pres_lev_pos=1,
-                          output_var='srh')
-    np.testing.assert_almost_equal(srh, ds.SRH03_model_lev.values, 5)
-    np.testing.assert_almost_equal(srh2, ds.SRH03_model_lev.values, 5)
-    
-def test_calc_srh_pressure_lev(dataset_soundings):
-    """Test SRH code"""
-    ds = dataset_soundings
-
-    srh, rm, lm, mean_6km = calc_srh(ds.pressure.values[:,1:],
-                          ds.temperature.values[:,1:],
-                          ds.dewpoint.values[:,1:],
-                          ds.u_wind_ms.values[:,1:],
-                          ds.v_wind_ms.values[:,1:],                         
-                          ds.pressure.values[:,0],
-                          ds.temperature.values[:,0],
-                          ds.dewpoint.values[:,0],
-                          ds.u_wind_ms.values[:,0],
-                          ds.v_wind_ms.values[:,0],
-                          depth = 3000,
-                          vertical_lev='pressure', 
-                          pres_lev_pos=ds.pressure.values[:,0]*0+1,
-                          output_var='all')
-    srh2 = calc_srh(ds.pressure.values[:,1:],
-                          ds.temperature.values[:,1:],
-                          ds.dewpoint.values[:,1:],
-                          ds.u_wind_ms.values[:,1:],
-                          ds.v_wind_ms.values[:,1:],                         
-                          ds.pressure.values[:,0],
-                          ds.temperature.values[:,0],
-                          ds.dewpoint.values[:,0],
-                          ds.u_wind_ms.values[:,0],
-                          ds.v_wind_ms.values[:,0],
-                          depth = 3000,
-                          vertical_lev='pressure',
-                          pres_lev_pos=ds.pressure.values[:,0]*0+1,
-                          output_var='srh')
-    np.testing.assert_almost_equal(srh, ds.SRH03_pressure_lev.values, 5)
-    np.testing.assert_almost_equal(srh2, ds.SRH03_pressure_lev.values, 5)
+    print(returns)
+    if output_var_in=='all':
+        srh = returns[0]
+        rm = returns[1]
+        lm = returns[2] 
+        mean_6km = returns[3] 
+        if use_dask:
+            assert isinstance(srh, dsa.Array)
+            assert isinstance(rm, dsa.Array)
+            assert isinstance(lm, dsa.Array)
+            assert isinstance(mean_6km, dsa.Array)
+            srh, rm, lm, mean_6km = dask.compute(srh, rm, lm, mean_6km)
+            np.testing.assert_almost_equal(srh, ds.SRH03_model_lev.values, 5)
+    else:
+        srh = returns[0]
+        if use_dask:
+            srh=returns
+            assert isinstance(srh, dsa.Array)
+            srh = dask.compute(srh)
+            srh = srh[0]
+            np.testing.assert_almost_equal(srh, ds.SRH03_model_lev.values, 5)
