@@ -88,7 +88,7 @@ def test_calc_cape(dataset_soundings, sourcein, pinc_used, use_dask,vertical_lev
                               ds.pressure.data[:, 0],
                               ds.temperature.data[:, 0],
                               ds.dewpoint.data[:, 0],
-                              ds.pressure.data[:,0]*0+1, #pres_lev_pos
+                              ds.pressure.data[:,0]*0, #pres_lev_pos
                               source=sourcein, ml_depth=500., adiabat='pseudo-liquid',
                               pinc=pinc_used,
                               method='fortran', vertical_lev=vertical_levin)
@@ -161,7 +161,7 @@ def test_calc_srh(dataset_soundings, output_var_in, n_returns, use_dask, vertica
                               ds.dewpoint.data[:,0],
                               ds.u_wind_ms.data[:,0],
                               ds.v_wind_ms.data[:,0],
-                              ds.pressure.data[:,0]*0+1, #pres_lev_pos
+                              ds.pressure.data[:,0]*0, #pres_lev_pos
                               depth = 3000,
                               vertical_lev='sigma', 
                               output_var=output_var_in)

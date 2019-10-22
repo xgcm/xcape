@@ -169,7 +169,7 @@ def _calc_cape_gufunc(p, t, td, ps, ts, tds, *args, **kwargs):
                                **kwargs)
     
     elif (kwargs['vertical_lev']=='pressure'):
-        pres_lev_pos = args[0]+1 # to fortran convention
+        pres_lev_pos = args[0]
         signature = "(i),(i),(i),(),(),(),()->(),()"
         output_dtypes = ('f4','f4')
         if kwargs['source']=='most-unstable':
@@ -199,7 +199,8 @@ def _calc_cape_numpy(p, t, td, ps, ts, tds, *args,
         pres_lev_pos=1
         p_s1d, t_s1d, td_s1d = _reshape_surface_inputs(ps, ts, tds)
     elif len(args)==1:
-        p_s1d, t_s1d, td_s1d, pres_lev_pos = _reshape_surface_inputs(ps, ts, tds, args[0])
+        p_s1d, t_s1d, td_s1d, pres_lev_pos = _reshape_surface_inputs(ps, ts, tds, 
+                                                                     args[0]+1) # to fortran convention
 
     _source_options_ ={'surface':1, 'most-unstable':2, 'mixed-layer':3}
     _adiabat_options_ ={'pseudo-liquid':1, 'reversible-liquid':2,
@@ -294,7 +295,7 @@ def _calc_srh_gufunc(p, t, td, u, v,  ps, ts, tds, us, vs, *args, **kwargs):
                                **kwargs)
     
     elif (kwargs['vertical_lev']=='pressure'):
-        pres_lev_pos = args[0]+1 # to fortran convention
+        pres_lev_pos = args[0]
         signature = "(i),(i),(i),(i),(i),(),(),(),(),(),()->()"
         output_dtypes = ('f4',)
         if kwargs['output_var']=='all':
@@ -324,7 +325,8 @@ def _calc_srh_numpy(p, t, td, u, v,  ps, ts, tds, us, vs, *args,
         p_s1d, t_s1d, td_s1d, u_s1d, v_s1d = _reshape_surface_inputs(ps, ts, tds, us, vs)
     elif len(args)==1:
         p_s1d, t_s1d, td_s1d, u_s1d, v_s1d, pres_lev_pos = _reshape_surface_inputs(ps, ts, 
-                                                                        tds, us, vs, args[0])
+                                                                        tds, us, vs, 
+                                                                        args[0]+1) # to fortran convention
     
     _vertical_lev_options_ ={'sigma':1, 'pressure':2}
     _output_var_options = {'srh':1, 'all':2}        
