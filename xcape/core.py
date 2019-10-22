@@ -105,7 +105,7 @@ def calc_cape(p, t, td, ps, ts, tds, *args, **kwargs):
     tds : array-like
         Surface Dew point temperature in Celsius
     pres_lev_pos :  array-like, optional
-        location in fortran values (1: nlev) of where p <= ps.
+        location in python values (0: nlev-1) of where p <= ps.
         When vertical_lev='model', pres_lev_pos is set to a flag = 1
         When vertical_lev='pressure', pres_lev_pos.shape = ps.shape
     source : {'surface', 'most-unstable', 'mixed-layer'}
@@ -169,7 +169,7 @@ def _calc_cape_gufunc(p, t, td, ps, ts, tds, *args, **kwargs):
                                **kwargs)
     
     elif (kwargs['vertical_lev']=='pressure'):
-        pres_lev_pos = args[0]
+        pres_lev_pos = args[0]+1 # to fortran convention
         signature = "(i),(i),(i),(),(),(),()->(),()"
         output_dtypes = ('f4','f4')
         if kwargs['source']=='most-unstable':
@@ -257,7 +257,7 @@ def calc_srh(p, t, td, u, v,  ps, ts, tds, us, vs, *args, **kwargs):
     tds : array-like
         Surface Dew point temperature in Celsius
     pres_lev_pos :  array-like, optional
-        location in fortran values (1: nlev) of where p <= ps.
+        location in python values (0: nlev-1) of where p <= ps.
         When vertical_lev='model', pres_lev_pos is set to a flag = 1
         When vertical_lev='pressure', pres_lev_pos.shape = ps.shape        
     depth : float, optional
@@ -294,7 +294,7 @@ def _calc_srh_gufunc(p, t, td, u, v,  ps, ts, tds, us, vs, *args, **kwargs):
                                **kwargs)
     
     elif (kwargs['vertical_lev']=='pressure'):
-        pres_lev_pos = args[0]
+        pres_lev_pos = args[0]+1 # to fortran convention
         signature = "(i),(i),(i),(i),(i),(),(),(),(),(),()->()"
         output_dtypes = ('f4',)
         if kwargs['output_var']=='all':
