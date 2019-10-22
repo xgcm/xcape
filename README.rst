@@ -27,8 +27,9 @@ For more information, including installation instructions, read the full
    :alt: license
 
 
-Compiling Fortran Code
-======================
+To Install Development Version
+==============================
 
- f2py  -c ALLCAPELOOP.pyf ALLcapecalcLOOP.f90
+    python setup.py build_ext
+    pip install -e . 
 
