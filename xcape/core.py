@@ -130,20 +130,22 @@ def calc_cape(p, t, td, ps, ts, tds, *args, **kwargs):
         height of MUlev (m)
      """
     if len(args)>1:
-        print('too many optional arguments')
+        raise ValueError("Too many optional arguments.")     
         
-    elif kwargs['vertical_lev']!=True:
-        print('please select type of vertical grid, pressure level, or model level')
+    allowed_vertical_levs = ['sigma', 'pressure']
+    if kwargs['vertical_lev'] not in allowed_vertical_levs:
+        raise ValueError(f"`vertrical_lev` must be one of: {allowed_vertical_levs}")
         
-    elif (len(args)==0)&(kwargs['vertical_lev'] == 'pressure'):
-        print('vertical grid is set to pressure levels,\n'+
-                +'but location in fortran values (1: nlev) of where p <= ps is missing')
+    if (len(args)==0)&(kwargs['vertical_lev'] == 'pressure'):
+        raise ValueError(f"`vertical grid` is set to `pressure`,\n"+
+                +"but location in fortran values (1: nlev) of where p <= ps is missing")
         
-    elif (len(args)==1)&(args[0].shape!=ps.shape)&(kwargs['vertical_lev'] == 'pressure'):
-        print('vertical grid is set to pressure levels,\n'+
-                +'but location in fortran values (1: nlev) of where p <= ps is not the correct shape\n'+
-                +'(pres_lev_pos.shape should be equal to ps.shape)')
-        
+    if (len(args)==1):
+        if (args[0].shape!=ps.shape)&(kwargs['vertical_lev'] == 'pressure'):
+            raise ValueError(f'`vertical grid` is set to `pressure`,\n'+
+                    +f'but location in fortran values (1: nlev) of where p <= ps is not the correct shape\n'+
+                    +f'(pres_lev_pos.shape should be equal to ps.shape)')
+
         
     if _any_dask_array(p, t, td, ps, ts, tds):
         return _calc_cape_gufunc(p, t, td, ps, ts, tds, *args, **kwargs)
@@ -159,7 +161,6 @@ def _calc_cape_gufunc(p, t, td, ps, ts, tds, *args, **kwargs):
         if kwargs['source']=='most-unstable':
             signature += ",(),()"
             output_dtypes = output_dtypes + ('i4','f4')
-        print(output_dtypes)
         return da.apply_gufunc(_calc_cape_numpy, signature,
                                p, t, td, ps, ts, tds, 
                                output_dtypes=output_dtypes,#('f4','f4'),
@@ -174,8 +175,6 @@ def _calc_cape_gufunc(p, t, td, ps, ts, tds, *args, **kwargs):
         if kwargs['source']=='most-unstable':
             signature += ",(),()"
             output_dtypes = output_dtypes + ('i4','f4')
-
-        print(output_dtypes)
         return da.apply_gufunc(_calc_cape_numpy, signature,
                                p, t, td, ps, ts, tds, pres_lev_pos,
                                output_dtypes=output_dtypes,#('f4','f4'),
@@ -286,7 +285,6 @@ def _calc_srh_gufunc(p, t, td, u, v,  ps, ts, tds, us, vs, *args, **kwargs):
         if kwargs['output_var']=='all':
             signature += ",(),(),()"
             output_dtypes = output_dtypes + ('f4','f4','f4')
-        print(output_dtypes)
         return da.apply_gufunc(_calc_srh_numpy, signature,
                                p, t, td, u, v,  
                                ps, ts, tds, us, vs,
@@ -302,8 +300,6 @@ def _calc_srh_gufunc(p, t, td, u, v,  ps, ts, tds, us, vs, *args, **kwargs):
         if kwargs['output_var']=='all':
             signature += ",(),(),()"
             output_dtypes = output_dtypes + ('f4','f4','f4')
-        print(output_dtypes)
-
         return da.apply_gufunc(_calc_srh_numpy, signature,
                                p, t, td, u, v,  
                                ps, ts, tds, us, vs, pres_lev_pos,
@@ -349,15 +345,17 @@ def _calc_srh_numpy(p, t, td, u, v,  ps, ts, tds, us, vs, *args,
                       u_s1d, v_s1d, aglh_s1d,
                       pres_lev_pos, depth, 
                       **kwargs)
-
+        #_reshape_outputs returns a list
         srh = _reshape_outputs(srh_2d, shape=original_shape)[0]
+        print('h', type(srh))
         return srh
     else:
         srh_2d, rm_2d, lm_2d, mean_6km_2d = _srh(u_2d, v_2d, aglh_2d, 
                       u_s1d, v_s1d, aglh_s1d,
                       pres_lev_pos, depth, 
                       **kwargs)
-        
+
         srh = _reshape_outputs(srh_2d, shape=original_shape)[0]
         rm, lm, mean_6km = _reshape_outputs_uv_components(rm_2d, lm_2d, mean_6km_2d, shape=original_shape)
+        print('j', type(srh))
         return srh, rm, lm, mean_6km

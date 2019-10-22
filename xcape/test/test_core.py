@@ -116,6 +116,7 @@ def test_calc_cape(dataset_soundings, sourcein, pinc_used, use_dask,vertical_lev
             assert isinstance(cape, dsa.Array)
             assert isinstance(cin, dsa.Array)
             cape, cin = dask.compute(cape, cin)
+            print(type(cape))
         if sourcein=='surface':
             np.testing.assert_almost_equal(cape, ds.SB_CAPE_pinc100.values, decimal_cape)
             np.testing.assert_almost_equal(cin, ds.SB_CIN_pinc100.values, decimal_cin)
@@ -166,7 +167,8 @@ def test_calc_srh(dataset_soundings, output_var_in, n_returns, use_dask, vertica
                               output_var=output_var_in)
         
 
-    print(returns)
+#     print(returns)
+#     print(type(returns))
     if output_var_in=='all':
         srh = returns[0]
         rm = returns[1]
@@ -181,9 +183,11 @@ def test_calc_srh(dataset_soundings, output_var_in, n_returns, use_dask, vertica
             np.testing.assert_almost_equal(srh, ds.SRH03_model_lev.values, 5)
     else:
         srh = returns[0]
+        print(type(srh))
         if use_dask:
             srh=returns
             assert isinstance(srh, dsa.Array)
             srh = dask.compute(srh)
+            print(type(srh))
             srh = srh[0]
             np.testing.assert_almost_equal(srh, ds.SRH03_model_lev.values, 5)
