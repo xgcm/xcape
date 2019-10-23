@@ -153,55 +153,46 @@ def calc_cape(p, t, td, ps, ts, tds, *args, **kwargs):
         return _calc_cape_numpy(p, t, td, ps, ts, tds, *args, **kwargs)
     
 
-def _calc_cape_gufunc(p, t, td, ps, ts, tds, *args, **kwargs):
+def _calc_cape_gufunc(*args, **kwargs):
     
     if (kwargs['vertical_lev']=='sigma'):
         signature = "(i),(i),(i),(),(),()->(),()"
         output_dtypes = ('f4','f4')
-        if kwargs['source']=='most-unstable':
-            signature += ",(),()"
-            output_dtypes = output_dtypes + ('i4','f4')
-        return da.apply_gufunc(_calc_cape_numpy, signature,
-                               p, t, td, ps, ts, tds, 
-                               output_dtypes=output_dtypes,#('f4','f4'),
+    elif (kwargs['vertical_lev']=='pressure'):
+        signature = "(i),(i),(i),(),(),(),()->(),()"
+        output_dtypes = ('f4','f4')
+        
+    if kwargs['source']=='most-unstable':
+        signature += ",(),()"
+        output_dtypes = output_dtypes + ('i4','f4')
+
+    return da.apply_gufunc(_calc_cape_numpy, signature,
+                               *args, 
+                               output_dtypes=output_dtypes,
                                axis=-1,
                                vectorize=False,
                                **kwargs)
     
-    elif (kwargs['vertical_lev']=='pressure'):
-        pres_lev_pos = args[0]
-        signature = "(i),(i),(i),(),(),(),()->(),()"
-        output_dtypes = ('f4','f4')
-        if kwargs['source']=='most-unstable':
-            signature += ",(),()"
-            output_dtypes = output_dtypes + ('i4','f4')
-        return da.apply_gufunc(_calc_cape_numpy, signature,
-                               p, t, td, ps, ts, tds, pres_lev_pos,
-                               output_dtypes=output_dtypes,#('f4','f4'),
-                               axis=-1,
-                               vectorize=False,
-                               **kwargs)
-
 # the numpy version of the algorithm
-def _calc_cape_numpy(p, t, td, ps, ts, tds, *args, 
+def _calc_cape_numpy(*args, 
                      source='surface', ml_depth=500.,
                      adiabat='pseudo-liquid',pinc=500., method='fortran',
                      vertical_lev='sigma'):
 
-
-    original_shape = p.shape
-    original_surface_shape = ps.shape
+    p, t, td, ps, ts, tds, *pres_lev_pos_in = args
+    
+    original_shape = p.shape #shape of 3D variable, i.e. p
+    original_surface_shape = ps.shape #shape of surface variable, i.e. ps
 
     # after this, all arrays are 2d shape (nlevs, npoints)
     p_2d, t_2d, td_2d = _reshape_inputs(p, t, td)
     
-    if len(args)==0:
-        pres_lev_pos=1
-        p_s1d, t_s1d, td_s1d = _reshape_surface_inputs(ps, ts, tds)
-    elif len(args)==1:
-        p_s1d, t_s1d, td_s1d, pres_lev_pos = _reshape_surface_inputs(ps, ts, tds, 
-                                                                     args[0]+1) # to fortran convention
-
+    p_s1d, t_s1d, td_s1d, *pres_lev_pos = _reshape_surface_inputs(ps, ts, tds, *pres_lev_pos_in) 
+    if len(args)==7:
+        pres_lev_pos = pres_lev_pos[0]+1 # to fortran convention
+    elif len(args)==6:
+        pres_lev_pos = 1
+        
     _source_options_ ={'surface':1, 'most-unstable':2, 'mixed-layer':3}
     _adiabat_options_ ={'pseudo-liquid':1, 'reversible-liquid':2,
                         'pseudo-ice':3, 'reversible-ice':4}
@@ -278,55 +269,46 @@ def calc_srh(p, t, td, u, v,  ps, ts, tds, us, vs, *args, **kwargs):
     else:
         return _calc_srh_numpy(p, t, td, u, v,  ps, ts, tds, us, vs, *args, **kwargs)
 
-def _calc_srh_gufunc(p, t, td, u, v,  ps, ts, tds, us, vs, *args, **kwargs):
+def _calc_srh_gufunc(*args, **kwargs):
+
     
     if (kwargs['vertical_lev']=='sigma'):
         signature = "(i),(i),(i),(i),(i),(),(),(),(),()->()"
         output_dtypes = ('f4',)
-        if kwargs['output_var']=='all':
-            signature += ",(),(),()"
-            output_dtypes = output_dtypes + ('f4','f4','f4')
-        return da.apply_gufunc(_calc_srh_numpy, signature,
-                               p, t, td, u, v,  
-                               ps, ts, tds, us, vs,
-                               output_dtypes=output_dtypes,
-                               axis=-1,
-                               vectorize=False,
-                               **kwargs)
-    
     elif (kwargs['vertical_lev']=='pressure'):
         pres_lev_pos = args[0]
         signature = "(i),(i),(i),(i),(i),(),(),(),(),(),()->()"
         output_dtypes = ('f4',)
-        if kwargs['output_var']=='all':
-            signature += ",(),(),()"
-            output_dtypes = output_dtypes + ('f4','f4','f4')
-        return da.apply_gufunc(_calc_srh_numpy, signature,
-                               p, t, td, u, v,  
-                               ps, ts, tds, us, vs, pres_lev_pos,
+    if kwargs['output_var']=='all':
+        signature += ",(),(),()"
+        output_dtypes = output_dtypes + ('f4','f4','f4')
+        
+    return da.apply_gufunc(_calc_srh_numpy, signature,
+                               *args,
                                output_dtypes=output_dtypes,
                                axis=-1,
                                vectorize=False,
                                **kwargs)
+    
 
 # the numpy version of the algorithm
-def _calc_srh_numpy(p, t, td, u, v,  ps, ts, tds, us, vs, *args,
+def _calc_srh_numpy( *args,
                     depth = 3000, vertical_lev='sigma',output_var='all'):    
     
-    
+    p, t, td, u, v,  ps, ts, tds, us, vs, *pres_lev_pos_in = args
     original_shape = p.shape
     original_surface_shape = ps.shape
 
     # after this, all arrays are 2d shape (nlevs, npoints)
     p_2d, t_2d, td_2d, u_2d, v_2d = _reshape_inputs(p, t, td, u, v)
     # after this, all surface arrays are 1d shape (npoints)    
-    if len(args)==0:
-        pres_lev_pos=1
-        p_s1d, t_s1d, td_s1d, u_s1d, v_s1d = _reshape_surface_inputs(ps, ts, tds, us, vs)
-    elif len(args)==1:
-        p_s1d, t_s1d, td_s1d, u_s1d, v_s1d, pres_lev_pos = _reshape_surface_inputs(ps, ts, 
+    p_s1d, t_s1d, td_s1d, u_s1d, v_s1d, *pres_lev_pos = _reshape_surface_inputs(ps, ts, 
                                                                         tds, us, vs, 
-                                                                        args[0]+1) # to fortran convention
+                                                                        *pres_lev_pos_in) # to fortran convention
+    if len(args)==11:
+        pres_lev_pos = pres_lev_pos[0]+1 # to fortran convention
+    elif len(args)==10:
+        pres_lev_pos = 1
     
     _vertical_lev_options_ ={'sigma':1, 'pressure':2}
     _output_var_options = {'srh':1, 'all':2}        
