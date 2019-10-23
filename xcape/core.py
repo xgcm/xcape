@@ -228,7 +228,7 @@ def _calc_cape_numpy(*args,
         return cape, cin
     
 
-def calc_srh(p, t, td, u, v,  ps, ts, tds, us, vs, *args, **kwargs):
+def calc_srh(*args, **kwargs):
     """
     Calculate cape for a set of profiles over the first axis of the arrays.
 
@@ -265,10 +265,10 @@ def calc_srh(p, t, td, u, v,  ps, ts, tds, us, vs, *args, **kwargs):
     -------
     srh : array-like
     """
-    if _any_dask_array(p, t, td, ps, ts, tds):
-        return _calc_srh_gufunc(p, t, td, u, v,  ps, ts, tds, us, vs, *args, **kwargs)
+    if _any_dask_array(*args):
+        return _calc_srh_gufunc(*args, **kwargs)
     else:
-        return _calc_srh_numpy(p, t, td, u, v,  ps, ts, tds, us, vs, *args, **kwargs)
+        return _calc_srh_numpy(*args, **kwargs)
 
 def _calc_srh_gufunc(*args, **kwargs):
 
