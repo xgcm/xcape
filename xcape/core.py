@@ -84,7 +84,7 @@ def _cape_dummy(p, t, td, ps, ts, tds,
 def _any_dask_array(*args):
     return any([isinstance(a, da.Array) for a in args])
 
-def calc_cape(p, t, td, ps, ts, tds, *args, **kwargs):
+def calc_cape(*args, **kwargs):
     """
     Calculate cape for a set of profiles over the first axis of the arrays.
 
@@ -129,28 +129,28 @@ def calc_cape(p, t, td, ps, ts, tds, *args, **kwargs):
     zMUlev : array-like
         height of MUlev (m)
      """
-    if len(args)>1:
-        raise ValueError("Too many optional arguments.")     
+    if len(args)>7:
+        raise ValueError("Too many arguments.")     
         
     allowed_vertical_levs = ['sigma', 'pressure']
     if kwargs['vertical_lev'] not in allowed_vertical_levs:
         raise ValueError(f"`vertrical_lev` must be one of: {allowed_vertical_levs}")
         
-    if (len(args)==0)&(kwargs['vertical_lev'] == 'pressure'):
+    if (len(args)==6)&(kwargs['vertical_lev'] == 'pressure'):
         raise ValueError(f"`vertical grid` is set to `pressure`,\n"+
                 +"but location in fortran values (1: nlev) of where p <= ps is missing")
         
-    if (len(args)==1):
-        if (args[0].shape!=ps.shape)&(kwargs['vertical_lev'] == 'pressure'):
+    if (len(args)==7):
+        if (args[6].shape!=args[3].shape)&(kwargs['vertical_lev'] == 'pressure'):
             raise ValueError(f'`vertical grid` is set to `pressure`,\n'+
-                    +f'but location in fortran values (1: nlev) of where p <= ps is not the correct shape\n'+
+                    +f'but location in python values (0: nlev-1) of where p <= ps is not the correct shape\n'+
                     +f'(pres_lev_pos.shape should be equal to ps.shape)')
 
         
-    if _any_dask_array(p, t, td, ps, ts, tds):
-        return _calc_cape_gufunc(p, t, td, ps, ts, tds, *args, **kwargs)
+    if _any_dask_array(*args):
+        return _calc_cape_gufunc(*args, **kwargs)
     else:
-        return _calc_cape_numpy(p, t, td, ps, ts, tds, *args, **kwargs)
+        return _calc_cape_numpy(*args, **kwargs)
     
 
 def _calc_cape_gufunc(*args, **kwargs):
@@ -188,6 +188,7 @@ def _calc_cape_numpy(*args,
     p_2d, t_2d, td_2d = _reshape_inputs(p, t, td)
     
     p_s1d, t_s1d, td_s1d, *pres_lev_pos = _reshape_surface_inputs(ps, ts, tds, *pres_lev_pos_in) 
+    
     if len(args)==7:
         pres_lev_pos = pres_lev_pos[0]+1 # to fortran convention
     elif len(args)==6:
