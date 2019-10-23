@@ -129,6 +129,9 @@ def calc_cape(*args, **kwargs):
     zMUlev : array-like
         height of MUlev (m)
      """
+    if len(args)<6:
+        raise ValueError("Too little arguments.")     
+        
     if len(args)>7:
         raise ValueError("Too many arguments.")     
         
