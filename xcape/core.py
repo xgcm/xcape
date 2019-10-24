@@ -280,7 +280,6 @@ def _calc_srh_gufunc(*args, **kwargs):
         signature = "(i),(i),(i),(i),(i),(),(),(),(),()->()"
         output_dtypes = ('f4',)
     elif (kwargs['vertical_lev']=='pressure'):
-        pres_lev_pos = args[0]
         signature = "(i),(i),(i),(i),(i),(),(),(),(),(),()->()"
         output_dtypes = ('f4',)
     if kwargs['output_var']=='all':
