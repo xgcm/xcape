@@ -308,11 +308,17 @@ def _calc_srh_numpy( *args,
                     depth = 3000, vertical_lev='sigma',output_var='all'):    
     
     p, t, td, u, v,  ps, ts, tds, us, vs, *pres_lev_pos_in = args
-    original_shape = p.shape
-    original_surface_shape = ps.shape
+    original_shape = t.shape #shape of 3D variable, i.e. p
+    original_surface_shape = ts.shape #shape of surface variable, i.e. ps
 
     # after this, all arrays are 2d shape (nlevs, npoints)
-    p_2d, t_2d, td_2d, u_2d, v_2d = _reshape_inputs(p, t, td, u, v)
+    if len(p.shape) == 1:
+        t_2d, td_2d, u_2d, v_2d = _reshape_inputs(t, td, u, v)
+        p_2d = _reshape_inputs(p)[0]
+        flag_1d = 1
+    elif p.shape[-1] == t.shape[-1]:
+        p_2d, t_2d, td_2d, u_2d, v_2d = _reshape_inputs(p, t, td, u, v)
+        flag_1d = 0
     # after this, all surface arrays are 1d shape (npoints)    
     p_s1d, t_s1d, td_s1d, u_s1d, v_s1d, *pres_lev_pos = _reshape_surface_inputs(ps, ts, 
                                                                         tds, us, vs, 
@@ -326,9 +332,10 @@ def _calc_srh_numpy( *args,
     _output_var_options = {'srh':1, 'all':2}        
 
     kwargs_stdh = dict(type_grid=_vertical_lev_options_[vertical_lev])
-    
+
     aglh_2d, aglh_s1d = _stdheight(p_2d, t_2d, td_2d,
                                    p_s1d, t_s1d, td_s1d,
+                                   flag_1d,
                                    pres_lev_pos, aglh0 = 2.,
                                    **kwargs_stdh)
     

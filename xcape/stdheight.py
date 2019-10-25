@@ -1,9 +1,9 @@
 
-def stdheight(p_2d, t_2d, td_2d, p_s, t_s, td_s, pres_lev_pos, aglh0, type_grid):
+def stdheight(p_2d, t_2d, td_2d, p_s, t_s, td_s, flag_1d, pres_lev_pos, aglh0, type_grid):
     import numpy as np
     # nlev has to be the first dimension
     # nlev here is the number of levels in 3d variables (without surface level)
-    nlev, ngrid = p_2d.shape
+    nlev, ngrid = t_2d.shape
 
     # if above ground level height is 1 value
     # (i.e. 2m or 10m) generate ngrid-long array with aglh0
@@ -22,10 +22,15 @@ def stdheight(p_2d, t_2d, td_2d, p_s, t_s, td_s, pres_lev_pos, aglh0, type_grid)
                                                       nlev, ngrid)
     elif type_grid == 2:
         from xcape import stdheight_2D_pressure_lev
-        H2D, H_s  = stdheight_2D_pressure_lev.loop_stdheight_pl(p_2d, t_2d, td_2d,
+        if flag_1d ==0:
+            H2D, H_s  = stdheight_2D_pressure_lev.loop_stdheight_pl(p_2d, t_2d, td_2d,
                                                       p_s, t_s, td_s,
                                                       aglh_in,pres_lev_pos,
                                                       nlev, ngrid)
-        
+        if flag_1d ==1:
+            H2D, H_s  = stdheight_2D_pressure_lev.loop_stdheight_pl1d(t_2d, td_2d, p_2d, 
+                                                      p_s, t_s, td_s,
+                                                      aglh_in,pres_lev_pos,
+                                                      nlev, ngrid)        
 
     return H2D, H_s

@@ -132,7 +132,6 @@ def test_calc_cape(dataset_soundings, sourcein, pinc_used, use_dask,vertical_lev
 def test_calc_capepressure1d(dataset_ERA5pressurelevel, sourcein, pinc_used, ml_depthin, use_dask,vertical_levin):
     """Test Surface Cape based on previously calculated using George Bryans code"""
     ds3d, dssurf = dataset_ERA5pressurelevel
-    print(ds3d)
     if use_dask:
         ds3d = ds3d.chunk()
         dssurf = dssurf.chunk()
@@ -145,7 +144,8 @@ def test_calc_capepressure1d(dataset_ERA5pressurelevel, sourcein, pinc_used, ml_
                           dssurf.start3d.data, #pres_lev_pos
                           source=sourcein, ml_depth=ml_depthin, adiabat='pseudo-liquid',
                           pinc=pinc_used,
-                          method='fortran', vertical_lev=vertical_levin)
+                          method='fortran', 
+                        vertical_lev=vertical_levin)
     
     if sourcein=='most-unstable':
         cape = returns[0]
@@ -199,7 +199,7 @@ def test_calc_srh(dataset_soundings, output_var_in, n_returns, use_dask, vertica
                               ds.u_wind_ms.data[:,0],
                               ds.v_wind_ms.data[:,0],
                               depth = 3000,
-                              vertical_lev='sigma', 
+                              vertical_lev=vertical_levin, 
                               output_var=output_var_in)
     elif  vertical_levin=='pressure':
         returns = calc_srh(ds.pressure.data[:,1:],
@@ -214,7 +214,7 @@ def test_calc_srh(dataset_soundings, output_var_in, n_returns, use_dask, vertica
                               ds.v_wind_ms.data[:,0],
                               ds.pressure.data[:,0]*0, #pres_lev_pos
                               depth = 3000,
-                              vertical_lev='sigma', 
+                              vertical_lev=vertical_levin, 
                               output_var=output_var_in)
         
 
@@ -242,3 +242,50 @@ def test_calc_srh(dataset_soundings, output_var_in, n_returns, use_dask, vertica
             print(type(srh))
             srh = srh[0]
             np.testing.assert_almost_equal(srh, ds.SRH03_model_lev.values, 5)
+
+@pytest.mark.parametrize('use_dask', [False, True])
+@pytest.mark.parametrize('output_var_in, n_returns',
+                         [('srh',1)])
+#                          [('all', 4),('srh',1)])
+@pytest.mark.parametrize('vertical_levin', ['pressure'])
+def test_calc_srh_pressure1d(dataset_ERA5pressurelevel, output_var_in, n_returns, use_dask, vertical_levin):
+    """Test SRH code"""
+    ds3d, dssurf = dataset_ERA5pressurelevel
+    if use_dask:
+        ds3d = ds3d.chunk()
+        dssurf = dssurf.chunk()
+    returns = calc_srh(ds3d.level.data,
+                          ds3d.t.data,
+                          ds3d.td.data,
+                          ds3d.u.data,
+                          ds3d.v.data,
+                          dssurf.p.data,
+                          dssurf.t.data,
+                          dssurf.td.data,
+                          dssurf.u.data,
+                          dssurf.v.data,
+                          dssurf.start3d.data, #pres_lev_pos
+                          depth = 3000,
+                          vertical_lev=vertical_levin,
+                          output_var=output_var_in)
+    if output_var_in=='all':
+        srh = returns[0]
+        rm = returns[1]
+        lm = returns[2] 
+        mean_6km = returns[3] 
+        if use_dask:
+            assert isinstance(srh, dsa.Array)
+            assert isinstance(rm, dsa.Array)
+            assert isinstance(lm, dsa.Array)
+            assert isinstance(mean_6km, dsa.Array)
+            srh, rm, lm, mean_6km = dask.compute(srh, rm, lm, mean_6km)
+            np.testing.assert_almost_equal(srh, dssurf.srh.values, 5)
+    else:
+        srh = returns[0]
+        if use_dask:
+            srh=returns
+            assert isinstance(srh, dsa.Array)
+            srh = dask.compute(srh)
+            print(type(srh))
+            srh = srh[0]
+            np.testing.assert_almost_equal(srh, dssurf.srh.values, 5)
