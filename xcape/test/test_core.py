@@ -7,7 +7,7 @@ import dask
 
 from ..core import calc_cape
 from ..core import calc_srh
-from .fixtures import empty_dask_array, dataset_soundings
+from .fixtures import empty_dask_array, dataset_soundings, dataset_ERA5pressurelevel
 
 import pytest
 
@@ -124,6 +124,57 @@ def test_calc_cape(dataset_soundings, sourcein, pinc_used, use_dask,vertical_lev
             np.testing.assert_almost_equal(cape, ds.ML_CAPE_pinc1000_mldepth500.values, decimal_cape)
             np.testing.assert_almost_equal(cin, ds.ML_CIN_pinc1000_mldepth500.values, decimal_cin)
 
+@pytest.mark.parametrize('use_dask', [False, True])
+@pytest.mark.parametrize('sourcein', ['surface', 'mixed-layer', 'most-unstable'])
+@pytest.mark.parametrize('vertical_levin', ['pressure'])
+@pytest.mark.parametrize('pinc_used', [500])
+@pytest.mark.parametrize('ml_depthin', [300])
+def test_calc_capepressure1d(dataset_ERA5pressurelevel, sourcein, pinc_used, ml_depthin, use_dask,vertical_levin):
+    """Test Surface Cape based on previously calculated using George Bryans code"""
+    ds3d, dssurf = dataset_ERA5pressurelevel
+    print(ds3d)
+    if use_dask:
+        ds3d = ds3d.chunk()
+        dssurf = dssurf.chunk()
+    returns = calc_cape(ds3d.level.data,
+                          ds3d.t.data,
+                          ds3d.td.data,
+                          dssurf.p.data,
+                          dssurf.t.data,
+                          dssurf.td.data,
+                          dssurf.start3d.data, #pres_lev_pos
+                          source=sourcein, ml_depth=ml_depthin, adiabat='pseudo-liquid',
+                          pinc=pinc_used,
+                          method='fortran', vertical_lev=vertical_levin)
+    
+    if sourcein=='most-unstable':
+        cape = returns[0]
+        cin = returns[1]
+        mulv = returns[2] 
+        zmulv = returns[3] 
+        if use_dask:
+            assert isinstance(cape, dsa.Array)
+            assert isinstance(cin, dsa.Array)
+            assert isinstance(mulv, dsa.Array)
+            assert isinstance(zmulv, dsa.Array)
+            cape, cin, mulv, zmulv = dask.compute(cape, cin, mulv, zmulv)
+
+        np.testing.assert_almost_equal(cape, dssurf.capemup500.values, decimal_cape)
+        np.testing.assert_almost_equal(cin, dssurf.cinmup500.values, decimal_cin)
+    else:
+        cape = returns[0]
+        cin = returns[1]
+        if use_dask:
+            assert isinstance(cape, dsa.Array)
+            assert isinstance(cin, dsa.Array)
+            cape, cin = dask.compute(cape, cin)
+            print(type(cape))
+        if sourcein=='surface':
+            np.testing.assert_almost_equal(cape, dssurf.capesp500.values, decimal_cape)
+            np.testing.assert_almost_equal(cin, dssurf.cinsp500.values, decimal_cin)
+        elif sourcein=='mixed-layer':
+            np.testing.assert_almost_equal(cape, dssurf.capeml300p500.values, decimal_cape)
+            np.testing.assert_almost_equal(cin, dssurf.cinml300p500.values, decimal_cin)
         
 
 @pytest.mark.parametrize('use_dask', [False, True])

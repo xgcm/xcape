@@ -140,14 +140,14 @@ def calc_cape(*args, **kwargs):
         raise ValueError(f"`vertrical_lev` must be one of: {allowed_vertical_levs}")
         
     if (len(args)==6)&(kwargs['vertical_lev'] == 'pressure'):
-        raise ValueError(f"`vertical grid` is set to `pressure`,\n"+
-                +"but location in fortran values (1: nlev) of where p <= ps is missing")
+        raise ValueError(f"`vertical grid` is set to `pressure`,\n",
+                "but location in fortran values (1: nlev) of where p <= ps is missing")
         
     if (len(args)==7):
         if (args[6].shape!=args[3].shape)&(kwargs['vertical_lev'] == 'pressure'):
-            raise ValueError(f'`vertical grid` is set to `pressure`,\n'+
-                    +f'but location in python values (0: nlev-1) of where p <= ps is not the correct shape\n'+
-                    +f'(pres_lev_pos.shape should be equal to ps.shape)')
+            raise ValueError(f'`vertical grid` is set to `pressure`,\n',
+                    'but location in python values (0: nlev-1) of where p <= ps is not the correct shape\n',
+                    '(pres_lev_pos.shape should be equal to ps.shape)')
 
         
     if _any_dask_array(*args):
@@ -184,12 +184,20 @@ def _calc_cape_numpy(*args,
 
     p, t, td, ps, ts, tds, *pres_lev_pos_in = args
     
-    original_shape = p.shape #shape of 3D variable, i.e. p
-    original_surface_shape = ps.shape #shape of surface variable, i.e. ps
+    original_shape = t.shape #shape of 3D variable, i.e. t (p could be 1d)
+    original_surface_shape = ts.shape #shape of surface variable, i.e. ps
 
     # after this, all arrays are 2d shape (nlevs, npoints)
-    p_2d, t_2d, td_2d = _reshape_inputs(p, t, td)
-    
+
+    if len(p.shape) == 1:
+        t_2d, td_2d = _reshape_inputs(t, td)
+        p_2d = _reshape_inputs(p)[0]
+        flag_1d = 1
+    elif p.shape[-1] == t.shape[-1]:
+        p_2d, t_2d, td_2d = _reshape_inputs(p, t, td)
+        flag_1d = 0
+        
+   
     p_s1d, t_s1d, td_s1d, *pres_lev_pos = _reshape_surface_inputs(ps, ts, tds, *pres_lev_pos_in) 
     
     if len(args)==7:
@@ -211,6 +219,7 @@ def _calc_cape_numpy(*args,
     if method == 'fortran':
         cape_2d, cin_2d, mulev, zmulev = _cape_fortran(p_2d, t_2d, td_2d,
                                                        p_s1d, t_s1d, td_s1d,
+                                                       flag_1d,
                                                        pres_lev_pos,
                                                        **kwargs)
 #     elif method == 'numba':

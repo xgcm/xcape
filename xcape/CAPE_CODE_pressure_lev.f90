@@ -82,7 +82,91 @@
     enddo
     return
     end subroutine loopcape_pl
+!-----------------------------------------------------------------------
+!ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+!-----------------------------------------------------------------------
+    subroutine loopcape_pl1d(t3d_in , td3d_in, p3d_in , ps1d_in , ts1d_in , tds1d_in, &
+                        &pinc, source, ml_depth, adiabat, start_3d, &
+                        &nk_in, n2, cape3d, cin3d, MUlvl3d, z_out3d)
+!-----------------------------------------------------------------------
+!  loopcape - loop along n2 dimension to calculate Convective Available
+!            Potential Energy (CAPE) from a sounding.
+!
+!  Author:  Chiara Lepore @chiaral
+!
+!  Disclaimer:  This code is made available WITHOUT WARRANTY.
+!-----------------------------------------------------------------------
+!  nk = number of pressure levels
+!  n2 = number of grid point for which calculate CAPE
+!  User options:
 
+!  pinc   ! Pressure increment (Pa)
+          ! (smaller number yields more accurate
+          !  results,larger number makes code
+          !  go faster) good value 1000
+
+!  source     ! Source parcel:
+              ! 1 = surface
+              ! 2 = most unstable (max theta-e)
+              ! 3 = mixed-layer (specify ml_depth)
+
+! ml_depth  ! depth (m) of mixed layer for source=3 - good value 500m
+
+!  adiabat    ! Formulation of moist adiabat:
+              ! 1 = pseudoadiabatic, liquid only
+              ! 2 = reversible, liquid only
+              ! 3 = pseudoadiabatic, with ice
+              ! 4 = reversible, with ice
+
+! type_grid   ! type of vertical grid
+              ! 1 = model level grid - uses all values in 3d files
+              ! 2 = fixed pressure level grid
+              !                 - p3d_in is 1d
+              !                 - values below ps height needs to be deleted
+!-----------------------------------------------------------------------
+
+    implicit none
+
+    !f2py threadsafe
+    !f2py intent(out) :: cape3d,cin3d,z_out3d,MUlvl3d
+
+    integer, intent(in) :: nk_in,n2
+    integer :: i,j
+    real, dimension(nk_in,n2), intent(in) ::t3d_in , td3d_in
+    real, dimension(nk_in,1), intent(in) :: p3d_in
+    real, dimension(n2), intent(in) :: ps1d_in , ts1d_in , tds1d_in
+    real, dimension(n2), intent(out) :: cape3d,cin3d,z_out3d
+    integer, dimension(n2), intent(out) :: MUlvl3d
+    real, intent(in) :: pinc ! Pressure increment (Pa) for interpolation
+    integer, intent(in) :: source ! Source parcel
+    real, intent(in) :: ml_depth ! depth (m) of mixed layer,for source=3
+    integer, intent(in) :: adiabat   ! Formulation of moist adiabat:
+    integer, dimension(n2), intent(in) ::  start_3d  ! for type_grid = 1 : equal to 1
+                                                               ! for type_grid = 2 " array of position of
+                                                               ! valid values in pressure levels
+                                                               ! (where p3d_in <= ps_in )
+    integer :: nk_start, nk_pl_in
+
+
+    do i = 1, n2
+      IF(ts1d_in(i).gt.0.0)THEN
+        ! use only levels where p3d_in <= ps_in
+        nk_start = start_3d(i)
+        ! compute number of used levels
+        nk_pl_in = nk_in - nk_start + 1
+        call getcape_pl(p3d_in(nk_start:nk_in,1) , t3d_in(nk_start:nk_in,i) , td3d_in(nk_start:nk_in,i), &
+        &ps1d_in(i), ts1d_in(i), tds1d_in(i), &
+        &pinc, source, ml_depth, adiabat, nk_pl_in, &
+        &cape3d(i) , cin3d(i), MUlvl3d(i), z_out3d(i))
+      ELSE
+        cape3d(i) = 0.0
+        cin3d(i)  = 0.0
+        z_out3d(i)= 0.0
+        MUlvl3d(i)= 0
+      ENDIF
+    enddo
+    return
+    end subroutine loopcape_pl1d
 !-----------------------------------------------------------------------
 !ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
 !-----------------------------------------------------------------------
