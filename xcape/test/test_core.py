@@ -44,7 +44,7 @@ def test_calc_cape_shape_3d(p_t_td_3d, p_t_td_surface, sourcein, n_returns, use_
     if vertical_levin=='sigma':
         args = (p, t, td, ps, ts, tds)
     elif vertical_levin =='pressure':        
-        args = (p, t, td, ps, ts, tds,ps*0+1)
+        args = (np.ones(t.shape[-1]), t, td, ps, ts, tds)
     if use_dask:
         args = [dsa.from_array(a) for a in args]
     result = calc_cape(*args, source=sourcein,vertical_lev=vertical_levin, method='dummy')
@@ -65,33 +65,21 @@ decimal_zmulv = 0
 @pytest.mark.parametrize('use_dask', [False, True])
 @pytest.mark.parametrize('sourcein, pinc_used',
                          [('surface', 100),('mixed-layer',1000),('most-unstable', 100)])
-@pytest.mark.parametrize('vertical_levin', ['sigma', 'pressure'])
-def test_calc_cape(dataset_soundings, sourcein, pinc_used, use_dask,vertical_levin):
+@pytest.mark.parametrize('vertical_levin', ['sigma'])
+def test_calc_cape_sigma(dataset_soundings, sourcein, pinc_used, use_dask,vertical_levin):
     """Test Surface Cape based on previously calculated using George Bryans code"""
     ds = dataset_soundings
     if use_dask:
         ds = ds.chunk()
-    if vertical_levin=='sigma':
-        returns = calc_cape(ds.pressure.data[:, 1:],
-                              ds.temperature.data[:, 1:],
-                              ds.dewpoint.data[:, 1:],
-                              ds.pressure.data[:, 0],
-                              ds.temperature.data[:, 0],
-                              ds.dewpoint.data[:, 0],
-                              source=sourcein, ml_depth=500., adiabat='pseudo-liquid',
-                              pinc=pinc_used,
-                              method='fortran', vertical_lev=vertical_levin)
-    elif  vertical_levin=='pressure':
-        returns = calc_cape(ds.pressure.data[:, 1:],
-                              ds.temperature.data[:, 1:],
-                              ds.dewpoint.data[:, 1:],
-                              ds.pressure.data[:, 0],
-                              ds.temperature.data[:, 0],
-                              ds.dewpoint.data[:, 0],
-                              ds.pressure.data[:,0]*0, #pres_lev_pos
-                              source=sourcein, ml_depth=500., adiabat='pseudo-liquid',
-                              pinc=pinc_used,
-                              method='fortran', vertical_lev=vertical_levin)
+    returns = calc_cape(ds.pressure.data[:, 1:],
+                          ds.temperature.data[:, 1:],
+                          ds.dewpoint.data[:, 1:],
+                          ds.pressure.data[:, 0],
+                          ds.temperature.data[:, 0],
+                          ds.dewpoint.data[:, 0],
+                          source=sourcein, ml_depth=500., adiabat='pseudo-liquid',
+                          pinc=pinc_used,
+                          method='fortran', vertical_lev=vertical_levin)
     
     if sourcein=='most-unstable':
         cape = returns[0]
@@ -129,7 +117,7 @@ def test_calc_cape(dataset_soundings, sourcein, pinc_used, use_dask,vertical_lev
 @pytest.mark.parametrize('vertical_levin', ['pressure'])
 @pytest.mark.parametrize('pinc_used', [500])
 @pytest.mark.parametrize('ml_depthin', [300])
-def test_calc_capepressure1d(dataset_ERA5pressurelevel, sourcein, pinc_used, ml_depthin, use_dask,vertical_levin):
+def test_calc_cape_pressure(dataset_ERA5pressurelevel, sourcein, pinc_used, ml_depthin, use_dask,vertical_levin):
     """Test Surface Cape based on previously calculated using George Bryans code"""
     ds3d, dssurf = dataset_ERA5pressurelevel
     if use_dask:
@@ -141,7 +129,6 @@ def test_calc_capepressure1d(dataset_ERA5pressurelevel, sourcein, pinc_used, ml_
                           dssurf.p.data,
                           dssurf.t.data,
                           dssurf.td.data,
-                          dssurf.start3d.data, #pres_lev_pos
                           source=sourcein, ml_depth=ml_depthin, adiabat='pseudo-liquid',
                           pinc=pinc_used,
                           method='fortran', 
@@ -181,14 +168,13 @@ def test_calc_capepressure1d(dataset_ERA5pressurelevel, sourcein, pinc_used, ml_
 @pytest.mark.parametrize('output_var_in, n_returns',
                          [('srh',1)])
 #                          [('all', 4),('srh',1)])
-@pytest.mark.parametrize('vertical_levin', ['sigma', 'pressure'])
-def test_calc_srh(dataset_soundings, output_var_in, n_returns, use_dask, vertical_levin):
+@pytest.mark.parametrize('vertical_levin', ['sigma'])
+def test_calc_srh_sigma(dataset_soundings, output_var_in, n_returns, use_dask, vertical_levin):
     """Test SRH code"""
     ds = dataset_soundings
     if use_dask:
         ds = ds.chunk()
-    if vertical_levin=='sigma':
-        returns = calc_srh(ds.pressure.data[:,1:],
+    returns = calc_srh(ds.pressure.data[:,1:],
                               ds.temperature.data[:,1:],
                               ds.dewpoint.data[:,1:],
                               ds.u_wind_ms.data[:,1:],
@@ -198,21 +184,6 @@ def test_calc_srh(dataset_soundings, output_var_in, n_returns, use_dask, vertica
                               ds.dewpoint.data[:,0],
                               ds.u_wind_ms.data[:,0],
                               ds.v_wind_ms.data[:,0],
-                              depth = 3000,
-                              vertical_lev=vertical_levin, 
-                              output_var=output_var_in)
-    elif  vertical_levin=='pressure':
-        returns = calc_srh(ds.pressure.data[:,1:],
-                              ds.temperature.data[:,1:],
-                              ds.dewpoint.data[:,1:],
-                              ds.u_wind_ms.data[:,1:],
-                              ds.v_wind_ms.data[:,1:],                         
-                              ds.pressure.data[:,0],
-                              ds.temperature.data[:,0],
-                              ds.dewpoint.data[:,0],
-                              ds.u_wind_ms.data[:,0],
-                              ds.v_wind_ms.data[:,0],
-                              ds.pressure.data[:,0]*0, #pres_lev_pos
                               depth = 3000,
                               vertical_lev=vertical_levin, 
                               output_var=output_var_in)
@@ -248,7 +219,7 @@ def test_calc_srh(dataset_soundings, output_var_in, n_returns, use_dask, vertica
                          [('srh',1)])
 #                          [('all', 4),('srh',1)])
 @pytest.mark.parametrize('vertical_levin', ['pressure'])
-def test_calc_srh_pressure1d(dataset_ERA5pressurelevel, output_var_in, n_returns, use_dask, vertical_levin):
+def test_calc_srh_pressure(dataset_ERA5pressurelevel, output_var_in, n_returns, use_dask, vertical_levin):
     """Test SRH code"""
     ds3d, dssurf = dataset_ERA5pressurelevel
     if use_dask:
@@ -264,7 +235,6 @@ def test_calc_srh_pressure1d(dataset_ERA5pressurelevel, output_var_in, n_returns
                           dssurf.td.data,
                           dssurf.u.data,
                           dssurf.v.data,
-                          dssurf.start3d.data, #pres_lev_pos
                           depth = 3000,
                           vertical_lev=vertical_levin,
                           output_var=output_var_in)
