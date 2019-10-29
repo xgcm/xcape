@@ -12,10 +12,14 @@ def srh(u_2d, v_2d, aglh_2d, u_s, v_s, aglh_s, pres_lev_pos, depth, type_grid, o
     
         rm_sup,lm_sup,mean_6km = Bunkers_model_lev.bunkers_loop_ml(u_2d, v_2d, aglh_2d, 
                                                  u_s, v_s, aglh_s)
-        srh = SREH_model_lev.loop_sreh_ml(u_2d, v_2d, aglh_2d, 
+        srh_rm = SREH_model_lev.loop_sreh_ml(u_2d, v_2d, aglh_2d, 
                                        u_s, v_s, aglh_s,
                                   rm_sup[0,:],
                                   rm_sup[1,:],depth)
+        srh_lm = SREH_model_lev.loop_sreh_ml(u_2d, v_2d, aglh_2d, 
+                                       u_s, v_s, aglh_s,
+                                  lm_sup[0,:],
+                                  lm_sup[1,:],depth)
 
     elif type_grid == 2:
         from xcape import Bunkers_pressure_lev
@@ -25,16 +29,20 @@ def srh(u_2d, v_2d, aglh_2d, u_s, v_s, aglh_s, pres_lev_pos, depth, type_grid, o
                                                  u_s, v_s, aglh_s,
                                                           pres_lev_pos)
         
-        srh = SREH_pressure_lev.loop_sreh_pl(u_2d, v_2d, aglh_2d, 
+        srh_rm = SREH_pressure_lev.loop_sreh_pl(u_2d, v_2d, aglh_2d, 
                                        u_s, v_s, aglh_s,
                                   rm_sup[0,:],
                                   rm_sup[1,:],depth,
                                          pres_lev_pos)
-        
+        srh_lm = SREH_pressure_lev.loop_sreh_pl(u_2d, v_2d, aglh_2d, 
+                                       u_s, v_s, aglh_s,
+                                  rm_sup[0,:],
+                                  rm_sup[1,:],depth,
+                                         pres_lev_pos)        
                 
     if output ==1:
-        return srh
+        return srh_rm, srh_lm
     else:
-        return srh, rm_sup, lm_sup, mean_6km
+        return srh_rm, srh_lm, rm_sup, lm_sup, mean_6km
     #pass
 
