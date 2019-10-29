@@ -30,7 +30,38 @@
       return
       end subroutine loop_stdheight_pl
 
+!-----------------------------------------------------------------------
+!ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+!-----------------------------------------------------------------------
+      SUBROUTINE loop_stdheight_pl1d(T,Td,P,Ps,Ts,Tds,Hin,start_3d,NK,NX, H,Hs)
+      !f2py threadsafe
+      !f2py intent(out) :: H
+      IMPLICIT NONE
+      INTEGER, INTENT(IN) :: NK,NX
+      INTEGER :: i, nk_pl_in, nk_start
+      DOUBLE PRECISION, DIMENSION(NK,NX), INTENT(IN) :: T,Td
+      DOUBLE PRECISION, DIMENSION(NK,1), INTENT(IN) :: P
+      DOUBLE PRECISION, DIMENSION(NX), INTENT(IN) :: Ps,Ts,Tds
+      DOUBLE PRECISION, DIMENSION(NX), INTENT(IN) :: Hin, start_3d
+      DOUBLE PRECISION, DIMENSION(NK,NX), INTENT(OUT) :: H
+      DOUBLE PRECISION, DIMENSION(NX), INTENT(OUT) :: Hs
 
+      do i = 1, NX
+          nk_start = start_3d(i)
+          ! compute number of used levels in 3d
+          nk_pl_in = NK - nk_start + 1
+          ! the unused levels in the output are set to -999999
+          ! print *,nk_start, nk_pl_in, nk
+          IF (nk_start .GT. 1) THEN
+              H(1:nk_start-1,i) = -999999
+          ENDIF
+          call stdheight_pl(P(nk_start:NK,1),T(nk_start:NK,i),Td(nk_start:NK,i),&
+                        &Ps(i),Ts(i),Tds(i),Hin(i),nk_pl_in,&
+                        &H(nk_start:NK,i),Hs(i))
+      enddo
+      return
+      end subroutine loop_stdheight_pl1d
+      
 !*********************************************************
 !Fast FORTRAN subroutine to calculate
 !Geopotential Height of an Isothermic layer,

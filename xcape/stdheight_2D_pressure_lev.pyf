@@ -18,6 +18,21 @@ python module stdheight_2D_pressure_lev ! in
             double precision dimension(nk,nx),intent(out),depend(nk,nx) :: h
             double precision dimension(nx),intent(out),depend(nx) :: hs
         end subroutine loop_stdheight_pl
+        subroutine loop_stdheight_pl1d(t,td,p,ps,ts,tds,hin,start_3d,nk,nx,h,hs) ! in :stdheight_2D_pressure_lev:stdheight_2D_pressure_lev.f90
+            threadsafe 
+            double precision dimension(nk,nx),intent(in) :: t
+            double precision dimension(nk,nx),intent(in),depend(nk,nx) :: td
+            double precision dimension(nk,1),intent(in),depend(nk) :: p
+            double precision dimension(nx),intent(in),depend(nx) :: ps
+            double precision dimension(nx),intent(in),depend(nx) :: ts
+            double precision dimension(nx),intent(in),depend(nx) :: tds
+            double precision dimension(nx),intent(in),depend(nx) :: hin
+            double precision dimension(nx),intent(in),depend(nx) :: start_3d
+            integer, optional,intent(in),check(shape(t,0)==nk),depend(t) :: nk=shape(t,0)
+            integer, optional,intent(in),check(shape(t,1)==nx),depend(t) :: nx=shape(t,1)
+            double precision dimension(nk,nx),intent(out),depend(nk,nx) :: h
+            double precision dimension(nx),intent(out),depend(nx) :: hs
+        end subroutine loop_stdheight_pl1d
         subroutine stdheight_pl(p,t,td,ps,ts,tds,hin,nk,h,hs) ! in :stdheight_2D_pressure_lev:stdheight_2D_pressure_lev.f90
             threadsafe 
             double precision dimension(nk),intent(in) :: p
