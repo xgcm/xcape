@@ -336,7 +336,6 @@ def _calc_srh_numpy(*args,
                       **kwargs)
         #_reshape_outputs returns a list
         srh = _reshape_outputs(srh_2d, shape=original_shape)[0]
-        print('h', type(srh))
         return srh
     else:
         srh_2d, rm_2d, lm_2d, mean_6km_2d = _srh(u_2d, v_2d, aglh_2d, 
@@ -346,5 +345,4 @@ def _calc_srh_numpy(*args,
 
         srh = _reshape_outputs(srh_2d, shape=original_shape)[0]
         rm, lm, mean_6km = _reshape_outputs_uv_components(rm_2d, lm_2d, mean_6km_2d, shape=original_shape)
-        print('j', type(srh))
         return srh, rm, lm, mean_6km
