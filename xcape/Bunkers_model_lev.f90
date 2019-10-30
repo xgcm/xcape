@@ -29,7 +29,7 @@
     nk_all = nk + 1
     do i = 1, n2
         U_all(1) = Us(i)
-        v_all(1) = Vs(i)
+        V_all(1) = Vs(i)
         AGLH_all(1) = AGLHs(i)
         U_all(2:nk_all) = U3d(:,i)
         V_all(2:nk_all) = V3d(:,i)

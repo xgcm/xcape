@@ -35,7 +35,7 @@
         nk_all = nk_pl_in+1
 
         U_all(1) = Us(i)
-        v_all(1) = Vs(i)
+        V_all(1) = Vs(i)
         AGLH_all(1) = AGLHs(i)
         U_all(2:nk_all) = U3d(nk_start:nk,i)
         V_all(2:nk_all) = V3d(nk_start:nk,i)
