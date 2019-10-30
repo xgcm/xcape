@@ -192,27 +192,29 @@ def test_calc_srh_sigma(dataset_soundings, output_var_in, n_returns, use_dask, v
 #     print(returns)
 #     print(type(returns))
     if output_var_in=='all':
-        srh = returns[0]
-        rm = returns[1]
-        lm = returns[2] 
-        mean_6km = returns[3] 
+        srh_rm = returns[0]
+        srh_lm = returns[1]
+        rm = returns[2]
+        lm = returns[3] 
+        mean_6km = returns[4] 
         if use_dask:
-            assert isinstance(srh, dsa.Array)
+            assert isinstance(srh_rm, dsa.Array)
+            assert isinstance(srh_lm, dsa.Array)
             assert isinstance(rm, dsa.Array)
             assert isinstance(lm, dsa.Array)
             assert isinstance(mean_6km, dsa.Array)
-            srh, rm, lm, mean_6km = dask.compute(srh, rm, lm, mean_6km)
-            np.testing.assert_almost_equal(srh, ds.SRH03_model_lev.values, 5)
+            srh, rm, lm, mean_6km = dask.compute(srh_rm, srh_lm, rm, lm, mean_6km)
+        np.testing.assert_almost_equal(srh_rm, ds.SRH03_model_lev_rm.values, 5)
+        np.testing.assert_almost_equal(srh_lm, ds.SRH03_model_lev_lm.values, 5)
     else:
-        srh = returns[0]
-        print(type(srh))
+        srh_rm = returns[0]
+        srh_lm = returns[1]
         if use_dask:
-            srh=returns
-            assert isinstance(srh, dsa.Array)
-            srh = dask.compute(srh)
-            print(type(srh))
-            srh = srh[0]
-            np.testing.assert_almost_equal(srh, ds.SRH03_model_lev.values, 5)
+            assert isinstance(srh_rm, dsa.Array)
+            assert isinstance(srh_lm, dsa.Array)
+            srh_rm, srh_lm = dask.compute(srh_rm, srh_lm)
+        np.testing.assert_almost_equal(srh_rm, ds.SRH03_model_lev_rm.values, 5)
+        np.testing.assert_almost_equal(srh_lm, ds.SRH03_model_lev_lm.values, 5)
 
 @pytest.mark.parametrize('use_dask', [False, True])
 @pytest.mark.parametrize('output_var_in, n_returns',
@@ -239,23 +241,28 @@ def test_calc_srh_pressure(dataset_ERA5pressurelevel, output_var_in, n_returns, 
                           vertical_lev=vertical_levin,
                           output_var=output_var_in)
     if output_var_in=='all':
-        srh = returns[0]
-        rm = returns[1]
-        lm = returns[2] 
-        mean_6km = returns[3] 
+        srh_rm = returns[0]
+        srh_lm = returns[1]
+        rm = returns[2]
+        lm = returns[3] 
+        mean_6km = returns[4] 
         if use_dask:
-            assert isinstance(srh, dsa.Array)
+            assert isinstance(srh_rm, dsa.Array)
+            assert isinstance(srh_lm, dsa.Array)
             assert isinstance(rm, dsa.Array)
             assert isinstance(lm, dsa.Array)
             assert isinstance(mean_6km, dsa.Array)
-            srh, rm, lm, mean_6km = dask.compute(srh, rm, lm, mean_6km)
-            np.testing.assert_almost_equal(srh, dssurf.srh.values, 5)
+            srh_rm, srh_lm, rm, lm, mean_6km = dask.compute(srh_rm, srh_lm, rm, lm, mean_6km)
+            
+        np.testing.assert_almost_equal(srh_rm, dssurf.srh_rm.values, 5)
+        np.testing.assert_almost_equal(srh_lm, dssurf.srh_lm.values, 5)
     else:
-        srh = returns[0]
+        srh_rm = returns[0]
+        srh_lm = returns[1]
         if use_dask:
-            srh=returns
-            assert isinstance(srh, dsa.Array)
-            srh = dask.compute(srh)
-            print(type(srh))
-            srh = srh[0]
-            np.testing.assert_almost_equal(srh, dssurf.srh.values, 5)
+            assert isinstance(srh_rm, dsa.Array)
+            assert isinstance(srh_lm, dsa.Array)
+            srh_rm, srh_lm = dask.compute(srh_rm, srh_lm)
+            
+        np.testing.assert_almost_equal(srh_rm, dssurf.srh_rm.values, 5)
+        np.testing.assert_almost_equal(srh_lm, dssurf.srh_lm.values, 5)
