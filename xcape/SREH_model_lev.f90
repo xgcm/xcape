@@ -2,7 +2,8 @@
 !ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
 !-----------------------------------------------------------------------
       SUBROUTINE loop_sreh_ml(u, v, aglh, us, vs, aglhs, &
-                          &cu, cv, top, nk, n2, sreh)
+                          &cu_rm, cv_rm, cu_lm, cv_lm, top, nk, n2, &
+                          &sreh_rm, sreh_lm)
       IMPLICIT NONE
 
       !f2py threadsafe
@@ -12,8 +13,8 @@
       REAL(KIND=8), DIMENSION(nk ,n2), INTENT(IN) :: u, v,aglh
       REAL(KIND=8), INTENT(IN) :: top
       REAL(KIND=8), DIMENSION(n2), INTENT(IN) :: us, vs, aglhs
-      REAL(KIND=8), DIMENSION(n2), INTENT(IN) :: cu, cv
-      REAL(KIND=8), DIMENSION(n2), INTENT(OUT) :: sreh
+      REAL(KIND=8), DIMENSION(n2), INTENT(IN) :: cu_rm, cv_rm, cu_lm, cv_lm 
+      REAL(KIND=8), DIMENSION(n2), INTENT(OUT) :: sreh_rm, sreh_lm
       INTEGER :: i, nk_all
       REAL(KIND=8), DIMENSION(nk+1) :: u_all, v_all, aglh_all
 
@@ -27,7 +28,8 @@
           aglh_all(2:nk_all) = aglh(:,i)
 
           call DCALRELHL_ml(u_all, v_all, aglh_all, &
-          &cu(i), cv(i), top, nk_all, sreh(i) )
+          &cu_rm(i), cv_rm(i), cu_lm(i), cv_lm(i), top, &
+          &nk_all, sreh_rm(i), sreh_lm(i) )
       enddo
       return
       end subroutine loop_sreh_ml
@@ -36,7 +38,8 @@
       !ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
       !-----------------------------------------------------------------------
 
-      SUBROUTINE DCALRELHL_ml(u, v, aglh, cu, cv, top, nk, sreh )
+      SUBROUTINE DCALRELHL_ml(u, v, aglh, cu_rm, cv_rm, cu_lm, cv_lm, top, nk, &
+                              &sreh_rm, sreh_lm )
 
       IMPLICIT NONE
 
@@ -46,8 +49,8 @@
       INTEGER, INTENT(IN) :: nk
       REAL(KIND=8), DIMENSION(nk), INTENT(IN) :: u, v,aglh
       REAL(KIND=8), INTENT(IN) :: top
-      REAL(KIND=8), DIMENSION(1), INTENT(IN) :: cu, cv
-      REAL(KIND=8), DIMENSION(1), INTENT(OUT) :: sreh
+      REAL(KIND=8), DIMENSION(1), INTENT(IN) :: cu_rm, cv_rm, cu_lm, cv_lm 
+      REAL(KIND=8), DIMENSION(1), INTENT(OUT) :: sreh_rm, sreh_lm
       REAL(KIND=8) :: INTERP1
 
 
@@ -81,11 +84,19 @@
 
       sum = 0.D0
       DO k = 2, ktop
-          x = ((utop(k) - cu)*(vtop(k) - vtop(k-1))) - &
-              ((vtop(k) - cv)*(utop(k) - utop(k-1)))
+          x = ((utop(k) - cu_rm)*(vtop(k) - vtop(k-1))) - &
+              ((vtop(k) - cv_rm)*(utop(k) - utop(k-1)))
           sum = sum + x
       END DO
-      sreh = -sum
+      sreh_rm = -sum
+
+      sum = 0.D0
+      DO k = 2, ktop
+          x = ((utop(k) - cu_lm)*(vtop(k) - vtop(k-1))) - &
+              ((vtop(k) - cv_lm)*(utop(k) - utop(k-1)))
+          sum = sum + x
+      END DO
+      sreh_lm = -sum
 
       RETURN
 
