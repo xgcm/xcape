@@ -204,8 +204,8 @@ def test_calc_srh_sigma(dataset_soundings, output_var_in, n_returns, use_dask, v
             assert isinstance(lm, dsa.Array)
             assert isinstance(mean_6km, dsa.Array)
             srh, rm, lm, mean_6km = dask.compute(srh_rm, srh_lm, rm, lm, mean_6km)
-            np.testing.assert_almost_equal(srh_rm, ds.SRH03_model_lev_rm.values, 5)
-            np.testing.assert_almost_equal(srh_lm, ds.SRH03_model_lev_lm.values, 5)
+        np.testing.assert_almost_equal(srh_rm, ds.SRH03_model_lev_rm.values, 5)
+        np.testing.assert_almost_equal(srh_lm, ds.SRH03_model_lev_lm.values, 5)
     else:
         srh_rm = returns[0]
         srh_lm = returns[1]
@@ -213,8 +213,8 @@ def test_calc_srh_sigma(dataset_soundings, output_var_in, n_returns, use_dask, v
             assert isinstance(srh_rm, dsa.Array)
             assert isinstance(srh_lm, dsa.Array)
             srh_rm, srh_lm = dask.compute(srh_rm, srh_lm)
-            np.testing.assert_almost_equal(srh_rm, ds.SRH03_model_lev_rm.values, 5)
-            np.testing.assert_almost_equal(srh_lm, ds.SRH03_model_lev_lm.values, 5)
+        np.testing.assert_almost_equal(srh_rm, ds.SRH03_model_lev_rm.values, 5)
+        np.testing.assert_almost_equal(srh_lm, ds.SRH03_model_lev_lm.values, 5)
 
 @pytest.mark.parametrize('use_dask', [False, True])
 @pytest.mark.parametrize('output_var_in, n_returns',
@@ -253,9 +253,9 @@ def test_calc_srh_pressure(dataset_ERA5pressurelevel, output_var_in, n_returns, 
             assert isinstance(lm, dsa.Array)
             assert isinstance(mean_6km, dsa.Array)
             srh_rm, srh_lm, rm, lm, mean_6km = dask.compute(srh_rm, srh_lm, rm, lm, mean_6km)
-            np.testing.assert_almost_equal(srh_rm, dssurf.srh.values, 5)
-            # we are only testing rm right now.
-#             np.testing.assert_almost_equal(srh_lm, dssurf.srh_lm.values, 5)
+            
+        np.testing.assert_almost_equal(srh_rm, dssurf.srh_rm.values, 5)
+        np.testing.assert_almost_equal(srh_lm, dssurf.srh_lm.values, 5)
     else:
         srh_rm = returns[0]
         srh_lm = returns[1]
@@ -263,6 +263,6 @@ def test_calc_srh_pressure(dataset_ERA5pressurelevel, output_var_in, n_returns, 
             assert isinstance(srh_rm, dsa.Array)
             assert isinstance(srh_lm, dsa.Array)
             srh_rm, srh_lm = dask.compute(srh_rm, srh_lm)
-            np.testing.assert_almost_equal(srh_rm, dssurf.srh.values, 5)
-            # we are only testing rm right now.
-#             np.testing.assert_almost_equal(srh_lm, dssurf.srh_lm.values, 5)
+            
+        np.testing.assert_almost_equal(srh_rm, dssurf.srh_rm.values, 5)
+        np.testing.assert_almost_equal(srh_lm, dssurf.srh_lm.values, 5)
