@@ -1,0 +1,43 @@
+!    -*- f90 -*-
+! Note: the context of this file is case sensitive.
+
+python module Interp_pressure_lev ! in 
+    interface  ! in :Interp_pressure_lev
+        subroutine interp_loop_pl(input,y_to_use,inputs,y_to_uses,loc_in,start_3d,nk,n2,output) ! in :Interp_pressure_lev:Interp_pressure_lev.f90
+            threadsafe 
+            real dimension(nk,n2),intent(in) :: input
+            real dimension(nk,n2),intent(in),depend(nk,n2) :: y_to_use
+            real dimension(n2),intent(in),depend(n2) :: inputs
+            real dimension(n2),intent(in),depend(n2) :: y_to_uses
+            real intent(in) :: loc_in
+            integer dimension(n2),intent(in),depend(n2) :: start_3d
+            integer, optional,intent(in),check(shape(input,0)==nk),depend(input) :: nk=shape(input,0)
+            integer, optional,intent(in),check(shape(input,1)==n2),depend(input) :: n2=shape(input,1)
+            real dimension(n2),intent(out),depend(n2) :: output
+        end subroutine interp_loop_pl
+        subroutine interp_loop_pl_y1d(input,y_to_use,inputs,y_to_uses,loc_in,start_3d,nk,n2,output) ! in :Interp_pressure_lev:Interp_pressure_lev.f90
+            threadsafe 
+            real dimension(nk,n2),intent(in) :: input
+            real dimension(nk,1),intent(in),depend(nk) :: y_to_use
+            real dimension(n2),intent(in),depend(n2) :: inputs
+            real dimension(n2),intent(in),depend(n2) :: y_to_uses
+            real intent(in) :: loc_in
+            integer dimension(n2),intent(in),depend(n2) :: start_3d
+            integer, optional,intent(in),check(shape(input,0)==nk),depend(input) :: nk=shape(input,0)
+            integer, optional,intent(in),check(shape(input,1)==n2),depend(input) :: n2=shape(input,1)
+            real dimension(n2),intent(out),depend(n2) :: output
+        end subroutine interp_loop_pl_y1d
+        subroutine dinterp_dz(v3d,z,loc,v2d,n2,nz) ! in :Interp_pressure_lev:Interp_pressure_lev.f90
+            threadsafe 
+            real dimension(nz,n2),intent(in) :: v3d
+            real dimension(nz,n2),intent(in),depend(nz,n2) :: z
+            real intent(in) :: loc
+            real dimension(n2),intent(out),depend(n2) :: v2d
+            integer, optional,check(shape(v3d,1)==n2),depend(v3d) :: n2=shape(v3d,1)
+            integer, optional,check(shape(v3d,0)==nz),depend(v3d) :: nz=shape(v3d,0)
+        end subroutine dinterp_dz
+    end interface 
+end python module Interp_pressure_lev
+
+! This file was auto-generated with f2py (version:2).
+! See http://cens.ioc.ee/projects/f2py2e/

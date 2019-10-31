@@ -24,7 +24,7 @@
 
     real, dimension(nk,n2), intent(in) :: INPUT, Y_TO_USE
     real, dimension(n2), intent(in) :: INPUTs, Y_TO_USEs
-    real, dimension(1), intent(in) :: LOC_in
+    real, intent(in) :: LOC_in
     integer, dimension(n2), intent(in) ::  start_3d 
     
     real, dimension(n2), intent(out) :: OUTPUT
@@ -71,10 +71,10 @@
     integer, intent(in) :: nk,n2
     integer :: i, nk_all, nk_pl_in, nk_start
 
-    real, dimension(nk,n2), intent(in) :: INPUT, 
+    real, dimension(nk,n2), intent(in) :: INPUT 
     real, dimension(nk,1), intent(in) :: Y_TO_USE
     real, dimension(n2), intent(in) :: INPUTs, Y_TO_USEs
-    real, dimension(1), intent(in) :: LOC_in
+    real, intent(in) :: LOC_in
     integer, dimension(n2), intent(in) ::  start_3d 
     
     real, dimension(n2), intent(out) :: OUTPUT

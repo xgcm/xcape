@@ -24,7 +24,7 @@
     integer :: i, nk_all
     real, dimension(nk,n2), intent(in) :: INPUT, Y_TO_USE
     real, dimension(n2), intent(in) :: INPUTs, Y_TO_USEs
-    real, dimension(1), intent(in) :: LOC_in
+    real, intent(in) :: LOC_in
     
     real, dimension(n2), intent(out) :: OUTPUT
     real, dimension(nk+1) :: INPUT_all, Y_TO_USE_all
