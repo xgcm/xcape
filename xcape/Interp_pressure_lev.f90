@@ -25,6 +25,7 @@
     real, dimension(nk,n2), intent(in) :: INPUT, Y_TO_USE
     real, dimension(n2), intent(in) :: INPUTs, Y_TO_USEs
     real, dimension(1), intent(in) :: LOC_in
+    integer, dimension(n2), intent(in) ::  start_3d 
     
     real, dimension(n2), intent(out) :: OUTPUT
     real, dimension(nk+1) :: INPUT_all, Y_TO_USE_all
@@ -71,9 +72,10 @@
     integer :: i, nk_all, nk_pl_in, nk_start
 
     real, dimension(nk,n2), intent(in) :: INPUT, 
-    real, dimension(nk_in,1), intent(in) :: Y_TO_USE
+    real, dimension(nk,1), intent(in) :: Y_TO_USE
     real, dimension(n2), intent(in) :: INPUTs, Y_TO_USEs
     real, dimension(1), intent(in) :: LOC_in
+    integer, dimension(n2), intent(in) ::  start_3d 
     
     real, dimension(n2), intent(out) :: OUTPUT
     real, dimension(nk+1) :: INPUT_all, Y_TO_USE_all
@@ -93,7 +95,7 @@
         call DINTERP_DZ(INPUT_all,Y_TO_USE_all,LOC_in,OUTPUT(i),1,nk_all)
     enddo
     return
-    end subroutine Interp_loop_pl
+    end subroutine interp_loop_pl_Y1d
 
 !-----------------------------------------------------------------------
 !ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc

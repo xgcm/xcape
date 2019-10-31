@@ -18,7 +18,7 @@
     implicit none
 
     !f2py threadsafe
-    !f2py intent(out) :: 
+    !f2py intent(out) :: OUTPUT
 
     integer, intent(in) :: nk,n2
     integer :: i, nk_all

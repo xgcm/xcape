@@ -83,6 +83,18 @@ ext_stdh_pl = Extension(name = 'stdheight_2D_pressure_lev',
                              extra_f90_compile_args=f90flags,
                              f2py_options=['--quiet'])
 
+ext_stdh_pl = Extension(name = 'Interp_pressure_lev',
+                        sources = ['xcape/Interp_pressure_lev.pyf',
+                                   'xcape/Interp_pressure_lev.f90'],
+                             extra_f90_compile_args=f90flags,
+                             f2py_options=['--quiet'])
+ext_stdh_pl = Extension(name = 'Interp_model_lev',
+                        sources = ['xcape/Interp_model_lev.pyf',
+                                   'xcape/Interp_model_lev.f90'],
+                             extra_f90_compile_args=f90flags,
+                             f2py_options=['--quiet'])
+
+
 DESCRIPTION = "Fast convective parameters for numpy, dask, and xarray"
 def readme():
     with open('README.rst') as f:
