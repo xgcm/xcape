@@ -346,3 +346,122 @@ def _calc_srh_numpy(*args,
         srh_rm, srh_lm = _reshape_outputs(srh_2d_rm, srh_2d_lm, shape=original_shape)
         rm, lm, mean_6km = _reshape_outputs_uv_components(rm_2d, lm_2d, mean_6km_2d, shape=original_shape)
         return srh_rm, srh_lm, rm, lm, mean_6km
+    
+def calc_indices(*args, **kwargs):
+    """
+    Calculate cape for a set of profiles over the first axis of the arrays.
+
+    Parameters
+    ----------
+    p : array-like
+        Pressure in mb.
+        When vertical_lev='model', p.shape = t.shape = (nlev, x, y, ...)
+        When vertical_lev='pressure', p.shape = t.shape[0] = (nlev)
+    t : array-like
+        Temperature in Celsius
+    td : array-like
+        Dew point temperature in Celsius
+        
+    ps : array-like
+        Surface Pressure in mb.
+    ts : array-like
+        Surface Temperature in Celsius
+    tds : array-like
+        Surface Dew point temperature in Celsius
+    depth : float, optional
+        Depth (m) of SRH layer.
+    vertical_lev : {'sigma', 'pressure'}
+        Which vertical grid is used
+    output_var : {'srh', 'all'}
+        'srh' = for only srh
+        'all' = for srh, Bunkers' right-moving and left-moving storm component, 
+                mean not pressure averaged 6km wind
+    Returns
+    -------
+    srh : array-like
+    """
+    if _any_dask_array(*args):
+        return _calc_srh_gufunc(*args, **kwargs)
+    else:
+        return _calc_srh_numpy(*args, **kwargs)
+
+def _calc_srh_gufunc(*args, **kwargs):
+
+    
+    if (kwargs['vertical_lev']=='sigma'):
+        signature = "(i),(i),(i),(i),(i),(),(),(),(),()->(),()"
+        output_dtypes = ('f4','f4')
+    elif (kwargs['vertical_lev']=='pressure'):
+        signature = "(i),(i),(i),(i),(i),(),(),(),(),(),()->(),()"
+        output_dtypes = ('f4','f4')
+    if kwargs['output_var']=='all':
+        signature += ",(2),(2),(2)"
+        output_dtypes = output_dtypes + ('f4','f4','f4')
+        
+    return da.apply_gufunc(_calc_srh_numpy, signature,
+                               *args,
+                               output_dtypes=output_dtypes,
+                               axis=-1,
+                               vectorize=False,
+                               **kwargs)
+    
+
+# the numpy version of the algorithm
+def _calc_srh_numpy(*args,
+                    depth = 3000, vertical_lev='sigma',output_var='srh'):    
+    
+    p, t, td, u, v,  ps, ts, tds, us, vs = args
+    original_shape = t.shape #shape of 3D variable, i.e. p
+    original_surface_shape = ts.shape #shape of surface variable, i.e. ps
+        
+    # after this, all arrays are 2d shape (nlevs, npoints)
+    p_s1d, t_s1d, td_s1d, u_s1d, v_s1d = _reshape_surface_inputs(ps, ts,tds, us, vs) 
+    if len(p.shape) == 1:
+        t_2d, td_2d, u_2d, v_2d = _reshape_inputs(t, td, u, v)
+        p_2d = _reshape_inputs(p)[0]
+        flag_1d = 1
+        # calculate pres_lev_pos
+        temp_index = (p_s1d-p_2d)
+        pres_lev_pos = np.ma.masked_less(temp_index,0).argmin(axis=0)
+        # fortran convention
+        pres_lev_pos = pres_lev_pos+1
+
+    elif (p.shape == t.shape)&(vertical_lev=='sigma'):
+        p_2d, t_2d, td_2d, u_2d, v_2d = _reshape_inputs(p, t, td, u, v)
+        flag_1d = 0
+        pres_lev_pos = 1
+    elif (p.shape == t.shape)&(vertical_lev=='pressure'):
+        raise ValueError("P should be 1d")     
+    
+    _vertical_lev_options_ ={'sigma':1, 'pressure':2}
+    _output_var_options = {'srh':1, 'all':2}        
+
+    kwargs_stdh = dict(type_grid=_vertical_lev_options_[vertical_lev])
+
+    aglh_2d, aglh_s1d = _stdheight(p_2d, t_2d, td_2d,
+                                   p_s1d, t_s1d, td_s1d,
+                                   flag_1d,
+                                   pres_lev_pos, aglh0 = 2.,
+                                   **kwargs_stdh)
+    
+    kwargs = dict(type_grid=_vertical_lev_options_[vertical_lev],
+                  output = _output_var_options[output_var])
+    
+    
+    if _output_var_options[output_var] == 1:
+        srh_2d_rm, srh_2d_lm = _srh(u_2d, v_2d, aglh_2d, 
+                      u_s1d, v_s1d, aglh_s1d,
+                      pres_lev_pos, depth, 
+                      **kwargs)
+        #_reshape_outputs returns a list
+        srh_rm, srh_lm = _reshape_outputs(srh_2d_rm, srh_2d_lm, shape=original_shape)
+        return srh_rm, srh_lm
+    else:
+        srh_2d_rm, srh_2d_lm, rm_2d, lm_2d, mean_6km_2d = _srh(u_2d, v_2d, aglh_2d, 
+                                                          u_s1d, v_s1d, aglh_s1d,
+                                                          pres_lev_pos, depth, 
+                                                          **kwargs)
+
+        srh_rm, srh_lm = _reshape_outputs(srh_2d_rm, srh_2d_lm, shape=original_shape)
+        rm, lm, mean_6km = _reshape_outputs_uv_components(rm_2d, lm_2d, mean_6km_2d, shape=original_shape)
+        return srh_rm, srh_lm, rm, lm, mean_6km
