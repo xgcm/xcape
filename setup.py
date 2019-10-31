@@ -83,13 +83,13 @@ ext_stdh_pl = Extension(name = 'stdheight_2D_pressure_lev',
                              extra_f90_compile_args=f90flags,
                              f2py_options=['--quiet'])
 
-ext_stdh_pl = Extension(name = 'Interp_pressure_lev',
+ext_interpI_pl = Extension(name = 'Interp_pressure_lev',
                         sources = ['xcape/Interp_pressure_lev.pyf',
                                    'xcape/Interp_pressure_lev.f90'],
                              extra_f90_compile_args=f90flags,
                              f2py_options=['--quiet'])
 
-ext_stdh_pl = Extension(name = 'Interp_model_lev',
+ext_interpI_ml = Extension(name = 'Interp_model_lev',
                         sources = ['xcape/Interp_model_lev.pyf',
                                    'xcape/Interp_model_lev.f90'],
                              extra_f90_compile_args=f90flags,
@@ -118,6 +118,7 @@ setup(name=DISTNAME,
       ext_modules = [ext_cape_ml, ext_cape_pl, 
                      ext_bunkers_ml, ext_bunkers_pl, 
                      ext_srh_ml, ext_srh_pl, 
-                     ext_stdh_ml, ext_stdh_pl]
+                     ext_stdh_ml, ext_stdh_pl,
+                    ext_interpI_pl, ext_interpI_ml]
       
       )
