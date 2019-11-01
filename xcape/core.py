@@ -408,19 +408,16 @@ def _calc_indices_numpy(*args,
                         vertical_lev='sigma'):    
     
     #21            
-    p, t, td, u, v, q,  ps, ts, tds, us, vs, qs = args[0:12] 
-    MUlevs, cape_mu, cape_sb, cin_sb, cape_ml, srh_rm1km, srh_lm1km, srh_rm3km, srh_lm3km= args[12:]
+    p, t, td, u, v,  ps, ts, tds, us, vs = args
     
     original_shape = t.shape #shape of 3D variable, i.e. p
     original_surface_shape = ts.shape #shape of surface variable, i.e. ps
         
     # after this, all arrays are 2d shape (nlevs, npoints)
-    p_s1d, t_s1d, td_s1d, u_s1d, v_s1d, q_s1d = _reshape_surface_inputs(ps, ts, tds, us, vs, qs) 
-    MUlevs_1d, cape_mu_1d, cape_sb_1d, cin_sb_1d, cape_ml_1d = _reshape_surface_inputs(MUlevs, cape_mu, cape_sb, cin_sb, cape_ml)
-    srh_rm1km_1d, srh_lm1km_1d, srh_rm3km_1d_1d, srh_lm3km_1d = _reshape_surface_inputs(srh_rm1km, srh_lm1km, srh_rm3km, srh_lm3km)
+    p_s1d, t_s1d, td_s1d, u_s1d, v_s1d = _reshape_surface_inputs(ps, ts, tds, us, vs) 
     
     if len(p.shape) == 1:
-        t_2d, td_2d, u_2d, v_2d, q_2d = _reshape_inputs(t, td, u, v, q)
+        t_2d, td_2d, u_2d, v_2d = _reshape_inputs(t, td, u, v)
         p_2d = _reshape_inputs(p)[0]
         flag_1d = 1
         # calculate pres_lev_pos
@@ -430,7 +427,7 @@ def _calc_indices_numpy(*args,
         pres_lev_pos = pres_lev_pos+1
 
     elif (p.shape == t.shape)&(vertical_lev=='sigma'):
-        p_2d, t_2d, td_2d, u_2d, v_2d, q_2d = _reshape_inputs(p, t, td, u, v, q)
+        p_2d, t_2d, td_2d, u_2d, v_2d = _reshape_inputs(p, t, td, u, v)
         flag_1d = 0
         pres_lev_pos = 1
     elif (p.shape == t.shape)&(vertical_lev=='pressure'):
