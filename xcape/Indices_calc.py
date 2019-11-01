@@ -65,10 +65,10 @@ def Indices_calc(p_2d, t_2d, td_2d, u_2d, v_2d,
         T3km = Interp_pressure_lev.interp_loop_pl(t_2d, H2D, t_s, H_s, 3000,pres_lev_pos)
         T4km = Interp_pressure_lev.interp_loop_pl(t_2d, H2D, t_s, H_s, 4000,pres_lev_pos)
 
-        T700 = Interp_pressure_lev.interp_loop_pl_Y1d(t_2d, p_2d, t_s, p_s, 700,pres_lev_pos)
-        T500 = Interp_pressure_lev.interp_loop_pl_Y1d(t_2d, p_2d, t_s, p_s, 500,pres_lev_pos)
-        z700 = Interp_pressure_lev.interp_loop_pl_Y1d(H2D, p_2d, H_s, p_s, 700,pres_lev_pos)
-        z500 = Interp_pressure_lev.interp_loop_pl_Y1d(H2D, p_2d, H_s, p_s, 500,pres_lev_pos)
+        T700 = Interp_pressure_lev.interp_loop_pl_y1d(t_2d, p_2d, t_s, p_s, 700,pres_lev_pos)
+        T500 = Interp_pressure_lev.interp_loop_pl_y1d(t_2d, p_2d, t_s, p_s, 500,pres_lev_pos)
+        z700 = Interp_pressure_lev.interp_loop_pl_y1d(H2D, p_2d, H_s, p_s, 700,pres_lev_pos)
+        z500 = Interp_pressure_lev.interp_loop_pl_y1d(H2D, p_2d, H_s, p_s, 500,pres_lev_pos)
 
 
         FZL = Interp_pressure_lev.interp_loop_pl(H2D, t_2d, H_s, t_s, -0.001,pres_lev_pos)
