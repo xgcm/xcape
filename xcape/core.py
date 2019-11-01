@@ -12,6 +12,7 @@ from .cape_fortran import cape as _cape_fortran
 from .cape_numba import cape as _cape_numba
 from .srh import srh as _srh
 from .stdheight import stdheight as _stdheight
+from .Indices_calc import Indices_calc as _Indices_calc
 
 def _prod(v):
     return reduce(lambda x, y: x*y, v)
@@ -361,6 +362,8 @@ def calc_indices(*args, **kwargs):
         Temperature in Celsius
     td : array-like
         Dew point temperature in Celsius
+    u
+    v
         
     ps : array-like
         Surface Pressure in mb.
@@ -368,17 +371,14 @@ def calc_indices(*args, **kwargs):
         Surface Temperature in Celsius
     tds : array-like
         Surface Dew point temperature in Celsius
-    depth : float, optional
-        Depth (m) of SRH layer.
+    us,
+    vs
+    
     vertical_lev : {'sigma', 'pressure'}
         Which vertical grid is used
-    output_var : {'srh', 'all'}
-        'srh' = for only srh
-        'all' = for srh, Bunkers' right-moving and left-moving storm component, 
-                mean not pressure averaged 6km wind
     Returns
     -------
-    srh : array-like
+    LAPSE24, LAPSE3,  LAPSE700_500, THGZ, S06, SBLCL, T500, FZL : array-like
     """
     if _any_dask_array(*args):
         return _calc_srh_gufunc(*args, **kwargs)
@@ -388,17 +388,14 @@ def calc_indices(*args, **kwargs):
 def _calc_indices_gufunc(*args, **kwargs):
 
     
-    if (kwargs['vertical_lev']=='sigma'):
-        signature = "(i),(i),(i),(i),(i),(),(),(),(),()->(),()"
-        output_dtypes = ('f4','f4')
-    elif (kwargs['vertical_lev']=='pressure'):
-        signature = "(i),(i),(i),(i),(i),(),(),(),(),(),()->(),()"
-        output_dtypes = ('f4','f4')
-    if kwargs['output_var']=='all':
-        signature += ",(2),(2),(2)"
-        output_dtypes = output_dtypes + ('f4','f4','f4')
-        
-    return da.apply_gufunc(_calc_srh_numpy, signature,
+    signatureA = "(i),(i),(i),(i),(i),(),(),(),(),()"
+    signatureB = "->(),()"
+    output_dtypes = ('f4','f4','f4','f4','f4','f4','f4','f4')
+    if (kwargs['vertical_lev']=='pressure'):
+        #ADD 1 INPUT FOR PRES_LEV_POS
+        signatureA = signatureA + ",()"
+    signature = signatureA + signatureB
+    return da.apply_gufunc(_calc_indices_numpy, signature,
                                *args,
                                output_dtypes=output_dtypes,
                                axis=-1,
@@ -410,14 +407,20 @@ def _calc_indices_gufunc(*args, **kwargs):
 def _calc_indices_numpy(*args,
                         vertical_lev='sigma'):    
     
-    p, t, td, u, v,  ps, ts, tds, us, vs = args
+    #21            
+    p, t, td, u, v, q,  ps, ts, tds, us, vs, qs = args[0:12] 
+    MUlevs, cape_mu, cape_sb, cin_sb, cape_ml, srh_rm1km, srh_lm1km, srh_rm3km, srh_lm3km= args[12:]
+    
     original_shape = t.shape #shape of 3D variable, i.e. p
     original_surface_shape = ts.shape #shape of surface variable, i.e. ps
         
     # after this, all arrays are 2d shape (nlevs, npoints)
-    p_s1d, t_s1d, td_s1d, u_s1d, v_s1d = _reshape_surface_inputs(ps, ts,tds, us, vs) 
+    p_s1d, t_s1d, td_s1d, u_s1d, v_s1d, q_s1d = _reshape_surface_inputs(ps, ts, tds, us, vs, qs) 
+    MUlevs_1d, cape_mu_1d, cape_sb_1d, cin_sb_1d, cape_ml_1d = _reshape_surface_inputs(MUlevs, cape_mu, cape_sb, cin_sb, cape_ml)
+    srh_rm1km_1d, srh_lm1km_1d, srh_rm3km_1d_1d, srh_lm3km_1d = _reshape_surface_inputs(srh_rm1km, srh_lm1km, srh_rm3km, srh_lm3km)
+    
     if len(p.shape) == 1:
-        t_2d, td_2d, u_2d, v_2d = _reshape_inputs(t, td, u, v)
+        t_2d, td_2d, u_2d, v_2d, q_2d = _reshape_inputs(t, td, u, v, q)
         p_2d = _reshape_inputs(p)[0]
         flag_1d = 1
         # calculate pres_lev_pos
@@ -427,7 +430,7 @@ def _calc_indices_numpy(*args,
         pres_lev_pos = pres_lev_pos+1
 
     elif (p.shape == t.shape)&(vertical_lev=='sigma'):
-        p_2d, t_2d, td_2d, u_2d, v_2d = _reshape_inputs(p, t, td, u, v)
+        p_2d, t_2d, td_2d, u_2d, v_2d, q_2d = _reshape_inputs(p, t, td, u, v, q)
         flag_1d = 0
         pres_lev_pos = 1
     elif (p.shape == t.shape)&(vertical_lev=='pressure'):
@@ -437,11 +440,16 @@ def _calc_indices_numpy(*args,
     kwargs = dict(type_grid=_vertical_lev_options_[vertical_lev])
     
     
-    srh_2d_rm, srh_2d_lm = _srh(u_2d, v_2d, aglh_2d, 
-                      u_s1d, v_s1d, aglh_s1d,
-                      pres_lev_pos, depth, 
-                      **kwargs)
+    LAPSE24_1d, LAPSE3_1d,  LAPSE700_500_1d, THGZ_1d, S06_1d, SBLCL_1d, T500_1d, FZL_1d = _Indices_calc(
+                                                                                 p_2d, t_2d, td_2d, u_2d, v_2d, 
+                                                                                 p_s1d, t_s1d, td_s1d, u_s1d, v_s1d, 
+                                                                                 pres_lev_pos, 
+                                                                                  **kwargs)
         #_reshape_outputs returns a list
-    srh_rm, srh_lm = _reshape_outputs(srh_2d_rm, srh_2d_lm, shape=original_shape)
-    return srh_rm, srh_lm
+    LAPSE24, LAPSE3,  LAPSE700_500, THGZ, S06, SBLCL, T500, FZL = _reshape_outputs(LAPSE24_1d, LAPSE3_1d,  
+                                                                 LAPSE700_500_1d, THGZ_1d, 
+                                                                 S06_1d, SBLCL_1d, T500_1d, FZL_1d, 
+                                                                 shape=original_shape)
+    
+    return LAPSE24, LAPSE3,  LAPSE700_500, THGZ, S06, SBLCL, T500, FZL
 

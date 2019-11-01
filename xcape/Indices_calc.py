@@ -1,6 +1,12 @@
 
-def Indices_calc(p_2d, t_2d, td_2d, u_2d, v_2d, 
-                 p_s, t_s, td_s,  u_s, v_s, pres_lev_pos, aglh0, type_grid):
+def Indices_calc(p_2d, t_2d, td_2d, u_2d, v_2d,  
+                 p_s, t_s, td_s,  u_s, v_s, 
+                 pres_lev_pos, aglh0, type_grid):
+    
+#     def Indices_calc(p_2d, t_2d, td_2d, u_2d, v_2d, q_2d, 
+#                  p_s, t_s, td_s,  u_s, v_s, q_s,
+#                  MUlevs , camu_s, cas_s, cin_s, caml_s, srh_rm1_s, srh_lm1_s, srh_rm3_s, srh_lm3_s,
+#                  pres_lev_pos, aglh0, type_grid):
     
     import numpy as np
     # nlev has to be the first dimension
@@ -76,39 +82,58 @@ def Indices_calc(p_2d, t_2d, td_2d, u_2d, v_2d,
     LAPSE24 = - (T4km-T2km)/2
     LAPSE3 = - (T3km-t_s)/3
     LAPSE700_500 = - (T500-T700)/((z500-z700)/1000)
+    THGZ = HT30-HT10
     # CALCULATE SBLCL
-    SBLCL = 125.* ( (t_s-t_2d)/2. -td_s)
+    SBLCL = 125.* ( (t_s-t_2d[0])/2. -td_s)
     # S06
     S06 = ( (U6km-u_s)**2 + (V6km-v_s)**2 )**0.5
     
-    ################
-    ##### SHIP #####    
-    q_mulev = np.where(MUlevs==1, q_s, q_2d[MUlevs-1,np.arange(q_2d.shape[1])])
+    return LAPSE24, LAPSE3,  LAPSE700_500, THGZ, S06, SBLCL, T500, FZL
+
+#     ################
+#     ##### SHIP #####    
+#     q_mulev = np.where(MUlevs==1, q_s, q_2d[MUlevs-1,np.arange(q_2d.shape[1])])
     
-    #SHIP
-    SHIP = (camu_s* q_mulev* LAPSE700_500 * (-T500) * S06)/(44_000_000)
-    SHIP = np.where(camu_s<1300, SHIP*(camu_s/1300), SHIP)
-    SHIP = np.where(LAPSE700_500<5.8, SHIP*(LAPSE700_500/5.8), SHIP)
-    SHIP = np.where(FZL<2400, SHIP*(FZL/2400), SHIP)
+#     #SHIP
+#     SHIP = (camu_s* q_mulev* LAPSE700_500 * (-T500) * S06)/(44_000_000)
+#     SHIP = np.where(camu_s<1300, SHIP*(camu_s/1300), SHIP)
+#     SHIP = np.where(LAPSE700_500<5.8, SHIP*(LAPSE700_500/5.8), SHIP)
+#     SHIP = np.where(FZL<2400, SHIP*(FZL/2400), SHIP)
     
-    ################
-    ##### STP #####  
-    Aterm = cas_s/1500.
-    Bterm = (2000.-SBLCL)/1000.
-    Bterm[SBLCL<1000] = 1
-    Bterm[SBLCL>2000] = 0
-    Cterm_rm = srh_rm1_s/150.
-    Cterm_lm = srh_lm1_s/150.
-    Dterm = S06/20.
-    Dterm[S06>30] =  1.5
-    Dterm[S06 < 12.5] = 0.
-    Eterm = np.fabs(cin_s)
-    Eterm[np.fabs(cin_s)>125]=0.
-    Eterm[np.fabs(cin_s)<=125]=1.
-    STP_rm = Aterm * Bterm * Cterm_rm * Dterm * Eterm
-    STP_lm = Aterm * Bterm * Cterm_lm * Dterm * Eterm
+#     ################
+#     ##### STP
+#     Aterm = cas_s/1500.
+#     Bterm = (2000.-SBLCL)/1000.
+#     Bterm[SBLCL<1000] = 1
+#     Bterm[SBLCL>2000] = 0
+#     Cterm_rm = srh_rm1_s/150.
+#     Cterm_lm = srh_lm1_s/150.
+#     Dterm = S06/20.
+#     Dterm[S06>30] =  1.5
+#     Dterm[S06 < 12.5] = 0.
+#     Eterm = np.fabs(cin_s)
+#     Eterm[np.fabs(cin_s)>125]=0.
+#     Eterm[np.fabs(cin_s)<=125]=1.
+#     STP_rm = Aterm * Bterm * Cterm_rm * Dterm * Eterm
+#     STP_lm = Aterm * Bterm * Cterm_lm * Dterm * Eterm
+#     print(STP.shape)
+
+#     ################
+#     ##### SCP#
+#     scp1 = cas_s/1000.
+#     scp2_rm = srh_rm3_s/100.
+#     scp2_lm = srh_lm3_s/100.
+#     scp3 = S06/20.
+#     SCP_rm = scp1*scp2_rm*scp3*Eterm
+#     SCP_lm = scp1*scp2_lm*scp3*Eterm
+
+#     ################
+#     ##### EHI
+#     EHI3_rm = ((caml_s)*(srh_rm3_s))/(1.6*10**5)
+#     EHI1_rm = ((caml_s)*(srh_rm1_s))/(1.6*10**5)
+#     EHI3_lm = ((caml_s)*(srh_lm3_s))/(1.6*10**5)
+#     EHI1_lm = ((caml_s)*(srh_lm1_s))/(1.6*10**5)
 
 
-
-    return ????
+#     return LAPSE24, LAPSE3,  LAPSE700_500, THGZ, S06, SHIP, STP_rm, STP_lm, SCP_rm, SCP_lm, EHI1_rm, EHI1_lm, EHI3_rm, EHI3_lm
 
