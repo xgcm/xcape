@@ -45,6 +45,8 @@ def Indices_calc(p_2d, t_2d, td_2d, u_2d, v_2d,
 
         U6km = Interp_model_lev.interp_loop_ml(u_2d, H2D, u_s, H_s, 6000)
         V6km = Interp_model_lev.interp_loop_ml(v_2d, H2D, v_s, H_s, 6000)
+        U1km = Interp_model_lev.interp_loop_ml(u_2d, H2D, u_s, H_s, 1000)
+        V1km = Interp_model_lev.interp_loop_ml(v_2d, H2D, v_s, H_s, 1000)
 
         
         
@@ -71,12 +73,14 @@ def Indices_calc(p_2d, t_2d, td_2d, u_2d, v_2d,
         z500 = Interp_pressure_lev.interp_loop_pl_y1d(H2D, p_2d, H_s, p_s, 500,pres_lev_pos)
 
 
-        FZL = Interp_pressure_lev.interp_loop_pl(H2D, t_2d, H_s, t_s, -0.001,pres_lev_pos)
+        FZL = Interp_pressure_lev.interp_loop_pl(H2D, t_2d, H_s, t_s, -0.00001,pres_lev_pos)
         HT30 = Interp_pressure_lev.interp_loop_pl(H2D, t_2d, H_s, t_s, -30,pres_lev_pos)
         HT10 = Interp_pressure_lev.interp_loop_pl(H2D, t_2d, H_s, t_s, -10,pres_lev_pos)
 
         U6km = Interp_pressure_lev.interp_loop_pl(u_2d, H2D, u_s, H_s, 6000,pres_lev_pos)
         V6km = Interp_pressure_lev.interp_loop_pl(v_2d, H2D, v_s, H_s, 6000,pres_lev_pos)
+        U1km = Interp_pressure_lev.interp_loop_pl(u_2d, H2D, u_s, H_s, 1000,pres_lev_pos)
+        V1km = Interp_pressure_lev.interp_loop_pl(v_2d, H2D, v_s, H_s, 1000,pres_lev_pos)
 
     # Calculate LAPSE RATES  - (Tsuperior-Tinferior)/(zsuperior-zinferior)
     LAPSE24 = - (T4km-T2km)/2
@@ -87,8 +91,10 @@ def Indices_calc(p_2d, t_2d, td_2d, u_2d, v_2d,
     SBLCL = 125.* ( (t_s-t_2d[0])/2. -td_s)
     # S06
     S06 = ( (U6km-u_s)**2 + (V6km-v_s)**2 )**0.5
+    # S01
+    S01 = ( (U1km-u_s)**2 + (V1km-v_s)**2 )**0.5
     
-    return LAPSE24, LAPSE3,  LAPSE700_500, THGZ, S06, SBLCL, T500, FZL
+    return LAPSE24, LAPSE3,  LAPSE700_500, THGZ, S06, S01, SBLCL, T500, FZL
 
 #     ################
 #     ##### SHIP #####    

@@ -438,18 +438,17 @@ def _calc_indices_numpy(*args,
     kwargs = dict(type_grid=_vertical_lev_options_[vertical_lev])
     
     
-    LAPSE24_1d, LAPSE3_1d,  LAPSE700_500_1d, THGZ_1d, S06_1d, SBLCL_1d, T500_1d, FZL_1d = _Indices_calc(
+    LAPSE24_1d, LAPSE3_1d,  LAPSE700_500_1d, THGZ_1d, S06_1d, S01_1d, SBLCL_1d, T500_1d, FZL_1d = _Indices_calc(
                                                                                  p_2d, t_2d, td_2d, u_2d, v_2d, 
                                                                                  p_s1d, t_s1d, td_s1d, u_s1d, v_s1d, 
                                                                                  pres_lev_pos, aglh0 = 2.,
                                                                                   **kwargs)
     
         #_reshape_outputs returns a list
-    print('here')
-    LAPSE24, LAPSE3,  LAPSE700_500, THGZ, S06, SBLCL, T500, FZL = _reshape_outputs(LAPSE24_1d, LAPSE3_1d,  
+    LAPSE24, LAPSE3,  LAPSE700_500, THGZ, S06, S01, SBLCL, T500, FZL = _reshape_outputs(LAPSE24_1d, LAPSE3_1d,  
                                                                  LAPSE700_500_1d, THGZ_1d, 
-                                                                 S06_1d, SBLCL_1d, T500_1d, FZL_1d, 
+                                                                 S06_1d, S01_1d, SBLCL_1d, T500_1d, FZL_1d, 
                                                                  shape=original_shape)
     
-    return LAPSE24, LAPSE3,  LAPSE700_500, THGZ, S06, SBLCL, T500, FZL
+    return LAPSE24, LAPSE3,  LAPSE700_500, THGZ, S06, S01, SBLCL, T500, FZL
 
