@@ -276,8 +276,8 @@ def _calc_srh_gufunc(*args, **kwargs):
         signature = "(i),(i),(i),(i),(i),(),(),(),(),(),()->(),()"
         output_dtypes = ('f4','f4')
     if kwargs['output_var']=='all':
-        signature += ",(2),(2),(2)"
-        output_dtypes = output_dtypes + ('f4','f4','f4')
+        signature += ",(),(),(),(),(),()" #",(2),(2),(2)"
+        output_dtypes = output_dtypes +  ('f4','f4','f4','f4','f4','f4') #('f4','f4','f4')
         
     return da.apply_gufunc(_calc_srh_numpy, signature,
                                *args,
@@ -345,4 +345,4 @@ def _calc_srh_numpy(*args,
 
         srh_rm, srh_lm = _reshape_outputs(srh_2d_rm, srh_2d_lm, shape=original_shape)
         rm, lm, mean_6km = _reshape_outputs_uv_components(rm_2d, lm_2d, mean_6km_2d, shape=original_shape)
-        return srh_rm, srh_lm, rm, lm, mean_6km
+        return  srh_rm, srh_lm, rm[0],rm[1], lm[0],lm[1], mean_6km[0], mean_6km[1] #srh_rm, srh_lm, rm, lm, mean_6km
