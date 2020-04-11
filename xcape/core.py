@@ -12,6 +12,7 @@ from .cape_fortran import cape as _cape_fortran
 from .cape_numba import cape as _cape_numba
 from .srh import srh as _srh
 from .stdheight import stdheight as _stdheight
+from .Indices_calc import Indices_calc as _Indices_calc
 
 def _prod(v):
     return reduce(lambda x, y: x*y, v)
@@ -346,3 +347,108 @@ def _calc_srh_numpy(*args,
         srh_rm, srh_lm = _reshape_outputs(srh_2d_rm, srh_2d_lm, shape=original_shape)
         rm, lm, mean_6km = _reshape_outputs_uv_components(rm_2d, lm_2d, mean_6km_2d, shape=original_shape)
         return srh_rm, srh_lm, rm, lm, mean_6km
+    
+def calc_indices(*args, **kwargs):
+    """
+    Calculate cape for a set of profiles over the first axis of the arrays.
+
+    Parameters
+    ----------
+    p : array-like
+        Pressure in mb.
+        When vertical_lev='model', p.shape = t.shape = (nlev, x, y, ...)
+        When vertical_lev='pressure', p.shape = t.shape[0] = (nlev)
+    t : array-like
+        Temperature in Celsius
+    td : array-like
+        Dew point temperature in Celsius
+    u
+    v
+        
+    ps : array-like
+        Surface Pressure in mb.
+    ts : array-like
+        Surface Temperature in Celsius
+    tds : array-like
+        Surface Dew point temperature in Celsius
+    us,
+    vs
+    
+    vertical_lev : {'sigma', 'pressure'}
+        Which vertical grid is used
+    Returns
+    -------
+    LAPSE24, LAPSE3,  LAPSE700_500, THGZ, S06, SBLCL, T500, FZL : array-like
+    """
+    if _any_dask_array(*args):
+        return _calc_indices_gufunc(*args, **kwargs)
+    else:
+        return _calc_indices_numpy(*args, **kwargs)
+
+def _calc_indices_gufunc(*args, **kwargs):
+
+    
+    signatureA = "(i),(i),(i),(i),(i),(),(),(),(),()"
+    signatureB = "->(),()"
+    output_dtypes = ('f4','f4','f4','f4','f4','f4','f4','f4')
+    if (kwargs['vertical_lev']=='pressure'):
+        #ADD 1 INPUT FOR PRES_LEV_POS
+        signatureA = signatureA + ",()"
+    signature = signatureA + signatureB
+    return da.apply_gufunc(_calc_indices_numpy, signature,
+                               *args,
+                               output_dtypes=output_dtypes,
+                               axis=-1,
+                               vectorize=False,
+                               **kwargs)
+    
+
+# the numpy version of the algorithm
+def _calc_indices_numpy(*args,
+                        vertical_lev='sigma'):    
+    
+    #21            
+    p, t, td, u, v,  ps, ts, tds, us, vs = args
+    
+    original_shape = t.shape #shape of 3D variable, i.e. p
+    original_surface_shape = ts.shape #shape of surface variable, i.e. ps
+        
+    # after this, all arrays are 2d shape (nlevs, npoints)
+    p_s1d, t_s1d, td_s1d, u_s1d, v_s1d = _reshape_surface_inputs(ps, ts, tds, us, vs) 
+    
+    if len(p.shape) == 1:
+        t_2d, td_2d, u_2d, v_2d = _reshape_inputs(t, td, u, v)
+        p_2d = _reshape_inputs(p)[0]
+        flag_1d = 1
+        # calculate pres_lev_pos
+        temp_index = (p_s1d-p_2d)
+        pres_lev_pos = np.ma.masked_less(temp_index,0).argmin(axis=0)
+        # fortran convention
+        pres_lev_pos = pres_lev_pos+1
+
+    elif (p.shape == t.shape)&(vertical_lev=='sigma'):
+        p_2d, t_2d, td_2d, u_2d, v_2d = _reshape_inputs(p, t, td, u, v)
+        flag_1d = 0
+        pres_lev_pos = 1
+    elif (p.shape == t.shape)&(vertical_lev=='pressure'):
+        raise ValueError("P should be 1d")     
+    
+    
+    _vertical_lev_options_ ={'sigma':1, 'pressure':2}
+    kwargs = dict(type_grid=_vertical_lev_options_[vertical_lev])
+    
+    
+    LAPSE24_1d, LAPSE3_1d,  LAPSE700_500_1d, THGZ_1d, S06_1d, S01_1d, SBLCL_1d, T500_1d, FZL_1d = _Indices_calc(
+                                                                                 p_2d, t_2d, td_2d, u_2d, v_2d, 
+                                                                                 p_s1d, t_s1d, td_s1d, u_s1d, v_s1d, 
+                                                                                 pres_lev_pos, aglh0 = 2.,
+                                                                                  **kwargs)
+    
+        #_reshape_outputs returns a list
+    LAPSE24, LAPSE3,  LAPSE700_500, THGZ, S06, S01, SBLCL, T500, FZL = _reshape_outputs(LAPSE24_1d, LAPSE3_1d,  
+                                                                 LAPSE700_500_1d, THGZ_1d, 
+                                                                 S06_1d, S01_1d, SBLCL_1d, T500_1d, FZL_1d, 
+                                                                 shape=original_shape)
+    
+    return LAPSE24, LAPSE3,  LAPSE700_500, THGZ, S06, S01, SBLCL, T500, FZL
+
