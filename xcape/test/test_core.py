@@ -166,8 +166,8 @@ def test_calc_cape_pressure(dataset_ERA5pressurelevel, sourcein, pinc_used, ml_d
 
 @pytest.mark.parametrize('use_dask', [False, True])
 @pytest.mark.parametrize('output_var_in, n_returns',
-                         [('srh',1)])
-#                          [('all', 4),('srh',1)])
+#                          [('srh',1)])
+                         [('all', 8),('srh',1)])
 @pytest.mark.parametrize('vertical_levin', ['sigma'])
 def test_calc_srh_sigma(dataset_soundings, output_var_in, n_returns, use_dask, vertical_levin):
     """Test SRH code"""
@@ -194,16 +194,22 @@ def test_calc_srh_sigma(dataset_soundings, output_var_in, n_returns, use_dask, v
     if output_var_in=='all':
         srh_rm = returns[0]
         srh_lm = returns[1]
-        rm = returns[2]
-        lm = returns[3] 
-        mean_6km = returns[4] 
+        rm0 = returns[2]
+        rm1 = returns[3] 
+        lm0 = returns[4] 
+        lm1 = returns[5] 
+        mean_6km0 = returns[6] 
+        mean_6km1 = returns[7] 
         if use_dask:
             assert isinstance(srh_rm, dsa.Array)
             assert isinstance(srh_lm, dsa.Array)
-            assert isinstance(rm, dsa.Array)
-            assert isinstance(lm, dsa.Array)
-            assert isinstance(mean_6km, dsa.Array)
-            srh, rm, lm, mean_6km = dask.compute(srh_rm, srh_lm, rm, lm, mean_6km)
+            assert isinstance(rm0, dsa.Array)
+            assert isinstance(rm1, dsa.Array)
+            assert isinstance(lm0, dsa.Array)
+            assert isinstance(lm1, dsa.Array)
+            assert isinstance(mean_6km0, dsa.Array)
+            assert isinstance(mean_6km1, dsa.Array)
+            srh_rm, srh_lm, rm0, rm1, lm0, lm1, mean_6km0,mean_6km1 = dask.compute(srh_rm, srh_lm, rm0, rm1, lm0, lm1, mean_6km0,mean_6km1)
         np.testing.assert_almost_equal(srh_rm, ds.SRH03_model_lev_rm.values, 5)
         np.testing.assert_almost_equal(srh_lm, ds.SRH03_model_lev_lm.values, 5)
     else:
@@ -218,8 +224,8 @@ def test_calc_srh_sigma(dataset_soundings, output_var_in, n_returns, use_dask, v
 
 @pytest.mark.parametrize('use_dask', [False, True])
 @pytest.mark.parametrize('output_var_in, n_returns',
-                         [('srh',1)])
-#                          [('all', 4),('srh',1)])
+#                          [('srh',1)])
+                         [('all', 8),('srh',1)])
 @pytest.mark.parametrize('vertical_levin', ['pressure'])
 def test_calc_srh_pressure(dataset_ERA5pressurelevel, output_var_in, n_returns, use_dask, vertical_levin):
     """Test SRH code"""
@@ -243,16 +249,22 @@ def test_calc_srh_pressure(dataset_ERA5pressurelevel, output_var_in, n_returns, 
     if output_var_in=='all':
         srh_rm = returns[0]
         srh_lm = returns[1]
-        rm = returns[2]
-        lm = returns[3] 
-        mean_6km = returns[4] 
+        rm0 = returns[2]
+        rm1 = returns[3] 
+        lm0 = returns[4] 
+        lm1 = returns[5] 
+        mean_6km0 = returns[6] 
+        mean_6km1 = returns[7] 
         if use_dask:
             assert isinstance(srh_rm, dsa.Array)
             assert isinstance(srh_lm, dsa.Array)
-            assert isinstance(rm, dsa.Array)
-            assert isinstance(lm, dsa.Array)
-            assert isinstance(mean_6km, dsa.Array)
-            srh_rm, srh_lm, rm, lm, mean_6km = dask.compute(srh_rm, srh_lm, rm, lm, mean_6km)
+            assert isinstance(rm0, dsa.Array)
+            assert isinstance(rm1, dsa.Array)
+            assert isinstance(lm0, dsa.Array)
+            assert isinstance(lm1, dsa.Array)
+            assert isinstance(mean_6km0, dsa.Array)
+            assert isinstance(mean_6km1, dsa.Array)
+            srh_rm, srh_lm, rm0, rm1, lm0, lm1, mean_6km0,mean_6km1 = dask.compute(srh_rm, srh_lm, rm0, rm1, lm0, lm1, mean_6km0,mean_6km1)
             
         np.testing.assert_almost_equal(srh_rm, dssurf.srh_rm.values, 5)
         np.testing.assert_almost_equal(srh_lm, dssurf.srh_lm.values, 5)
