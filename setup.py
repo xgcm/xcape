@@ -4,7 +4,7 @@ import re
 import sys
 import warnings
 import versioneer
-#from setuptools import setup, find_packages
+from setuptools import setup, find_packages
 from numpy.distutils.core import setup, Extension
 from numpy.distutils.fcompiler import get_default_fcompiler, CompilerNotFound
 
@@ -100,11 +100,11 @@ setup(name=DISTNAME,
       #install_requires=INSTALL_REQUIRES,
       #python_requires=PYTHON_REQUIRES,
       url=URL,
-      #packages=['xcape'],
+      packages=find_packages(),
       ext_package='xcape',
-      ext_modules = [ext_cape_ml, ext_cape_pl, 
-                     ext_bunkers_ml, ext_bunkers_pl, 
-                     ext_srh_ml, ext_srh_pl, 
+      ext_modules = [ext_cape_ml, ext_cape_pl,
+                     ext_bunkers_ml, ext_bunkers_pl,
+                     ext_srh_ml, ext_srh_pl,
                      ext_stdh_ml, ext_stdh_pl]
-      
+
       )
