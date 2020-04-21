@@ -6,7 +6,7 @@ notifications:
 
 env:
   global:
-    - CONDA_PACKAGES="numpy>=1.16 xarray dask-core pytest"
+    - CONDA_PACKAGES="numpy>=1.16 xarray dask pytest"
 
 jobs:
   fast_finish: true
