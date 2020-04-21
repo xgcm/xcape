@@ -8,6 +8,4 @@ exclude_lines =
     raise NotImplementedError
     if __name__ == .__main__.:
 ignore_errors = True
-omit = xcape/test/*
-       xcape/__init__.py
-       xcape/_version.py
+omit = src/xcape/*

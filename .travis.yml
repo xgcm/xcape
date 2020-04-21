@@ -48,7 +48,7 @@ before_script:
 script:
   - if [ $DOCTEST == 'true' ];
     then cd doc; make html;
-    else py.test -v --cov=xcape --cov-config .coveragerc --cov-report term-missing;
+    else py.test -v --cov=xcape --cov-config .coveragerc --cov-report term-missing test;
     fi
 
 after_success:
