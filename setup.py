@@ -24,7 +24,7 @@ CLASSIFIERS = [
     'Topic :: Scientific/Engineering',
 ]
 
-INSTALL_REQUIRES = ['xarray>=0.12.0', 'dask', 'numpy>=1.16']
+INSTALL_REQUIRES = ['xarray>=0.14.1', 'dask', 'numpy>=1.16']
 PYTHON_REQUIRES = '>=3.6'
 
 
@@ -97,8 +97,8 @@ setup(name=DISTNAME,
       classifiers=CLASSIFIERS,
       description=DESCRIPTION,
       long_description=readme(),
-      #install_requires=INSTALL_REQUIRES,
-      #python_requires=PYTHON_REQUIRES,
+      install_requires=INSTALL_REQUIRES,
+      python_requires=PYTHON_REQUIRES,
       url=URL,
       packages=find_packages(),
       ext_package='xcape',
