@@ -5,8 +5,8 @@ from itertools import combinations
 import dask.array as dsa
 import dask
 
-from ..core import calc_cape
-from ..core import calc_srh
+from xcape.core import calc_cape
+from xcape.core import calc_srh
 from .fixtures import empty_dask_array, dataset_soundings, dataset_ERA5pressurelevel
 
 import pytest
@@ -43,7 +43,7 @@ def test_calc_cape_shape_3d(p_t_td_3d, p_t_td_surface, sourcein, n_returns, use_
     ps, ts, tds = p_t_td_surface
     if vertical_levin=='sigma':
         args = (p, t, td, ps, ts, tds)
-    elif vertical_levin =='pressure':        
+    elif vertical_levin =='pressure':
         args = (np.ones(t.shape[-1]), t, td, ps, ts, tds)
     if use_dask:
         args = [dsa.from_array(a) for a in args]
@@ -54,7 +54,7 @@ def test_calc_cape_shape_3d(p_t_td_3d, p_t_td_surface, sourcein, n_returns, use_
         if use_dask:
             assert isinstance(data, dsa.Array)
             data.compute()
-    
+
 
 # tolerance for tests
 decimal_cape = 0
@@ -80,12 +80,12 @@ def test_calc_cape_sigma(dataset_soundings, sourcein, pinc_used, use_dask,vertic
                           source=sourcein, ml_depth=500., adiabat='pseudo-liquid',
                           pinc=pinc_used,
                           method='fortran', vertical_lev=vertical_levin)
-    
+
     if sourcein=='most-unstable':
         cape = returns[0]
         cin = returns[1]
-        mulv = returns[2] 
-        zmulv = returns[3] 
+        mulv = returns[2]
+        zmulv = returns[3]
         if use_dask:
             assert isinstance(cape, dsa.Array)
             assert isinstance(cin, dsa.Array)
@@ -131,14 +131,14 @@ def test_calc_cape_pressure(dataset_ERA5pressurelevel, sourcein, pinc_used, ml_d
                           dssurf.td.data,
                           source=sourcein, ml_depth=ml_depthin, adiabat='pseudo-liquid',
                           pinc=pinc_used,
-                          method='fortran', 
+                          method='fortran',
                         vertical_lev=vertical_levin)
-    
+
     if sourcein=='most-unstable':
         cape = returns[0]
         cin = returns[1]
-        mulv = returns[2] 
-        zmulv = returns[3] 
+        mulv = returns[2]
+        zmulv = returns[3]
         if use_dask:
             assert isinstance(cape, dsa.Array)
             assert isinstance(cin, dsa.Array)
@@ -162,7 +162,7 @@ def test_calc_cape_pressure(dataset_ERA5pressurelevel, sourcein, pinc_used, ml_d
         elif sourcein=='mixed-layer':
             np.testing.assert_almost_equal(cape, dssurf.capeml300p500.values, decimal_cape)
             np.testing.assert_almost_equal(cin, dssurf.cinml300p500.values, decimal_cin)
-        
+
 
 @pytest.mark.parametrize('use_dask', [False, True])
 @pytest.mark.parametrize('output_var_in, n_returns',
@@ -178,16 +178,16 @@ def test_calc_srh_sigma(dataset_soundings, output_var_in, n_returns, use_dask, v
                               ds.temperature.data[:,1:],
                               ds.dewpoint.data[:,1:],
                               ds.u_wind_ms.data[:,1:],
-                              ds.v_wind_ms.data[:,1:],                         
+                              ds.v_wind_ms.data[:,1:],
                               ds.pressure.data[:,0],
                               ds.temperature.data[:,0],
                               ds.dewpoint.data[:,0],
                               ds.u_wind_ms.data[:,0],
                               ds.v_wind_ms.data[:,0],
                               depth = 3000,
-                              vertical_lev=vertical_levin, 
+                              vertical_lev=vertical_levin,
                               output_var=output_var_in)
-        
+
 
 #     print(returns)
 #     print(type(returns))
@@ -195,11 +195,11 @@ def test_calc_srh_sigma(dataset_soundings, output_var_in, n_returns, use_dask, v
         srh_rm = returns[0]
         srh_lm = returns[1]
         rm0 = returns[2]
-        rm1 = returns[3] 
-        lm0 = returns[4] 
-        lm1 = returns[5] 
-        mean_6km0 = returns[6] 
-        mean_6km1 = returns[7] 
+        rm1 = returns[3]
+        lm0 = returns[4]
+        lm1 = returns[5]
+        mean_6km0 = returns[6]
+        mean_6km1 = returns[7]
         if use_dask:
             assert isinstance(srh_rm, dsa.Array)
             assert isinstance(srh_lm, dsa.Array)
@@ -250,11 +250,11 @@ def test_calc_srh_pressure(dataset_ERA5pressurelevel, output_var_in, n_returns, 
         srh_rm = returns[0]
         srh_lm = returns[1]
         rm0 = returns[2]
-        rm1 = returns[3] 
-        lm0 = returns[4] 
-        lm1 = returns[5] 
-        mean_6km0 = returns[6] 
-        mean_6km1 = returns[7] 
+        rm1 = returns[3]
+        lm0 = returns[4]
+        lm1 = returns[5]
+        mean_6km0 = returns[6]
+        mean_6km1 = returns[7]
         if use_dask:
             assert isinstance(srh_rm, dsa.Array)
             assert isinstance(srh_lm, dsa.Array)
@@ -265,7 +265,7 @@ def test_calc_srh_pressure(dataset_ERA5pressurelevel, output_var_in, n_returns, 
             assert isinstance(mean_6km0, dsa.Array)
             assert isinstance(mean_6km1, dsa.Array)
             srh_rm, srh_lm, rm0, rm1, lm0, lm1, mean_6km0,mean_6km1 = dask.compute(srh_rm, srh_lm, rm0, rm1, lm0, lm1, mean_6km0,mean_6km1)
-            
+
         np.testing.assert_almost_equal(srh_rm, dssurf.srh_rm.values, 5)
         np.testing.assert_almost_equal(srh_lm, dssurf.srh_lm.values, 5)
     else:
@@ -275,6 +275,6 @@ def test_calc_srh_pressure(dataset_ERA5pressurelevel, output_var_in, n_returns, 
             assert isinstance(srh_rm, dsa.Array)
             assert isinstance(srh_lm, dsa.Array)
             srh_rm, srh_lm = dask.compute(srh_rm, srh_lm)
-            
+
         np.testing.assert_almost_equal(srh_rm, dssurf.srh_rm.values, 5)
         np.testing.assert_almost_equal(srh_lm, dssurf.srh_lm.values, 5)
