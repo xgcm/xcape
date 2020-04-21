@@ -4,13 +4,21 @@ sudo: false # use container based build
 notifications:
   email: false
 
-matrix:
+env:
+  global:
+    - CONDA_PACKAGES="numpy>=1.16 xarray dask-core pytest"
+
+jobs:
   fast_finish: true
   include:
   - python: 3.6
-    env: CONDA_ENV="ci/environment-py36.yml" DOCTEST=false
+    env: DOCTEST=false
+  - python: 3.7
+    env: DOCTEST=false
+  - python: 3.8
+    env: DOCTEST=false
   - python: 3.6
-    env: CONDA_ENV="doc/environment.yml" DOCTEST=true
+    env: DOCTEST=true
 
 before_install:
   - sudo apt-get install gfortran
@@ -27,12 +35,15 @@ before_install:
   - conda info -a
 
 install:
-  - conda env create -f $CONDA_ENV
+  - conda create -n xcape_test_env python="$TRAVIS_PYTHON_VERSION" "$CONDA_PACKAGES"
   - source activate xcape_test_env
   - if [ $DOCTEST == 'false' ];
     then python setup.py build_ext;
     fi
-  - pip install -e .
+  - pip install .
+
+before_script:
+  - pip install codecov pytest-cov
 
 script:
   - if [ $DOCTEST == 'true' ];
