@@ -1,7 +1,7 @@
 import numpy as np
 import dask
 import dask.array as dsa
-from ..duck_array_ops import (reshape, ravel_multi_index, broadcast_arrays)
+from xcape.duck_array_ops import (reshape, ravel_multi_index, broadcast_arrays)
 from .fixtures import empty_dask_array
 import pytest
 
