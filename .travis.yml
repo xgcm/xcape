@@ -35,7 +35,7 @@ before_install:
   - conda info -a
 
 install:
-  - conda create -n xcape_test_env python="$TRAVIS_PYTHON_VERSION" "$CONDA_PACKAGES"
+  - conda create -n xcape_test_env python="$TRAVIS_PYTHON_VERSION" $CONDA_PACKAGES
   - source activate xcape_test_env
   - if [ $DOCTEST == 'false' ];
     then python setup.py build_ext;
