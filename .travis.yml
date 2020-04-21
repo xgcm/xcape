@@ -17,8 +17,9 @@ jobs:
     env: DOCTEST=false
   - python: 3.8
     env: DOCTEST=false
-  - python: 3.6
-    env: DOCTEST=true
+# uncomment once we are ready to do docs
+#  - python: 3.6
+#    env: DOCTEST=true
 
 before_install:
   - sudo apt-get install gfortran
