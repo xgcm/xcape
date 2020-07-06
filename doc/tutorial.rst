@@ -28,23 +28,7 @@ calculated using the included script. It is suggested that the above be of a scr
 This can then be incorporated into a function to calculate convective available potential energy (CAPE):
 
   .. code:: python 
-   >>> def calc_and_save_cape(year, month):
-          yearmo = f'{year}{month:02d}'
-          data, surface = read_reanal(year, month)
-          from xcape import core
-
-          cas,cis = core.calc_cape(data.p.data, data.t.data, data.td.data, 
-                  surface.p.data, surface.t.data, surface.td.data,
-                  source ='surface',
-                  pinc = 700,
-                method='fortran',
-                vertical_lev='sigma')
-          surface['cape_s']=(('time','latitude','longitude'),cas)
-          surface['cin_s']=(('time','latitude','longitude'),cis)
-   >>> def main():
-          calc_and_save_cape(year, month)
-   >>> if __name__== "__main__":
-          main() 
+   >>> 
 
 Note that there are many customizable inputs in the operation calc_cape, including modifying the integration interval for precision,
 specifying the vertical level form of the input, and the source of the initial parcel, and whether to use the fortran or numpy implementation (note fortran is preferred for speed). See documentation for further details. 
