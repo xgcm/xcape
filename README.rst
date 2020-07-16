@@ -32,4 +32,3 @@ To Install Development Version
 
     python setup.py build_ext
     pip install -e . 
-
