@@ -230,44 +230,103 @@ def _calc_cape_numpy(*args,
 
 def calc_srh(*args, **kwargs):
     """
-    Calculate cape for a set of profiles over the first axis of the arrays.
+    Calculate Storm Relative Helicity (SRH) for a defined storm motion. 
+
+    Description:
+    ------------
+    Calculate SRH over a predefined depth for a N-dimensional gridded field. 
+    Performs a point profile integration of the area between the hodograph and      the vectors between the estimated storm motion vector at the bottom and top     layer. The calculation assumes that the storm motion is described by the
+    un-weighted mean 0-6 km wind vector subsampled at 500m intervals, with a 
+    left or right moving storm deviating by 7.5 m/s perpendicular to this 
+    mean wind, following the empirically estimated approach defined by 
+    Bunkers et al. (2000). Output can be specified to include the assumed 
+    motion, or to return only the helicity as calculated for the user-defined 
+    layer. Vertical level option should be specified based on the input model 
+    data, whether defined on pressure or model levels.     
+    
+    Formula:
+    --------
+    Calculates SRH for a user specified depth based on the numeric integration:
+    .. math:: \text{SRH} = \int\limits_0^top (\bar v - c) \cdot \bar\omega_{h} \,dz    
+    
+    * :math:'SRH' Storm Relative Helicity
+    * :math:'\bar v' Environmental Wind Vector
+    * :math:'\bar c' Storm Motion Vector (left and right components)
+    * :math:'\bar\omega_{h}' Horizontal Vorticity Vector
+    * :math:'z' height above ground
+ 
+    For further details see Markowski and Richardson [2010], pages 230-231.
 
     Parameters
     ----------
-    p : array-like
-        Pressure in mb.
+    p : 'array-like'
+        Atmospheric pressure in hPa.
         When vertical_lev='model', p.shape = t.shape = (nlev, x, y, ...)
         When vertical_lev='pressure', p.shape = t.shape[0] = (nlev)
-    t : array-like
-        Temperature in Celsius
+    t : 'array-like'
+        Atmospheric temperature in Celsius. Vertical shape should be identical to pressure. 
     td : array-like
-        Dew point temperature in Celsius
-        
-    ps : array-like
-        Surface Pressure in mb.
-    ts : array-like
-        Surface Temperature in Celsius
-    tds : array-like
-        Surface Dew point temperature in Celsius
+        Atmospheric dew point temperature in Celsius. Vertical shape should be identical to pressure. 
+    u  : 'array-like'
+        Zonal wind component in meters per second. Vertical shape should be identical to pressure. 
+    v  : 'array-like'
+        Meridional wind component in meters per second. Vertical shape should be identical to pressure.    
+    ps : 'array-like'
+        Surface Pressure in hPa.
+    ts : 'array-like'
+        Surface Temperature in Celsius.
+    tds : 'array-like'
+        Surface dew point temperature in Celsius.
+    us : 'array-like'
+        10m zonal wind field in meters per second. 
+    us : 'array-like'
+        10m meridional wind field in meters per second. 
+    
+    Default usage:
+    --------------
+    srh_rm, srh_lm = core.calc_srh(p,t,td,u,v,ps,ts,tds,us,vs,
+                                   depth=3000.,vertical_lev='sigma',
+                                   output_var='srh')
+    
+    Optional Kwargs:
+    ----------------
+    The following options can be user selected.
     depth : float, optional
-        Depth (m) of SRH layer.
+        Depth in meters (m) of the layer to calculate SRH.
     vertical_lev : {'sigma', 'pressure'}
-        Which vertical grid is used
+        Option to select vertical grid, between model coordinates and 
+        pressure levels.
     output_var : {'srh', 'all'}
+        Option to return either calculated SRH only, or also the Bunker's storm
+        motion for the right-moving and left-moving storms, along with the not
+        pressure-weighted mean 0-6 km wind.
         'srh' = for only srh
         'all' = for srh, Bunkers' right-moving and left-moving storm component, 
                 mean not pressure averaged 6km wind
+    
     Returns
     -------
-    srh : array-like
+    srh_rm : 'array-like'
+          Storm relative helicity for the right-moving storm.
+    srh_lm : 'array-like'
+          Storm relative helicity for the left-moving storm.
+    bunkers_rm: 'array-like'
+          Estimated storm motion for the right-moving storm.
+    bunkers_rm: 'array-like'
+          Estimated storm motion for the left-moving storm.
+    bunkers_rm: 'array-like'
+          Mean wind between 0 and 6km without pressure weighting.
     """
+
     if _any_dask_array(*args):
         return _calc_srh_gufunc(*args, **kwargs)
     else:
         return _calc_srh_numpy(*args, **kwargs)
 
 def _calc_srh_gufunc(*args, **kwargs):
-
+     ''' Wrapped function for SRH calculation for dask arrays to leverage 
+         parallelized calculation over the grid. Called by calc_srh.
+     '''
     
     if (kwargs['vertical_lev']=='sigma'):
         signature = "(i),(i),(i),(i),(i),(),(),(),(),()->(),()"
@@ -290,7 +349,16 @@ def _calc_srh_gufunc(*args, **kwargs):
 # the numpy version of the algorithm
 def _calc_srh_numpy(*args,
                     depth = 3000, vertical_lev='sigma',output_var='srh'):    
-    
+    ''' 
+     Wrapper function for SRH calculation to setup optional kwargs and 
+     ensure data is provided in a format suitable output to call the 
+     Fortran implementation of SRH calculation. Also calculates standard
+     height using the hypsometric equation, which necessitates the passing
+     of pressure, temperature and dewpoint temperature. Called by 
+     _calc_srh_gufunc.   
+     '''    
+
+
     p, t, td, u, v,  ps, ts, tds, us, vs = args
     original_shape = t.shape #shape of 3D variable, i.e. p
     original_surface_shape = ts.shape #shape of surface variable, i.e. ps
