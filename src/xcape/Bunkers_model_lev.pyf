@@ -1,5 +1,7 @@
 !    -*- f90 -*-
 ! Note: the context of this file is case sensitive.
+! Python Wrapper for the functions needed to generate a Bunkers et al. [2000]
+! derived storm motion for n-dimensional model data. 
 
 python module Bunkers_model_lev ! in 
     interface  ! in :Bunkers_model_lev

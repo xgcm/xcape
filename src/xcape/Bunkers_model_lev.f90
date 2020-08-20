@@ -9,10 +9,37 @@
 !
 !  Disclaimer:  This code is made available WITHOUT WARRANTY.
 !-----------------------------------------------------------------------
-!  U3d,V3d = zonal and meridional wind
-!  AGLH3d = above ground level height
-!  nk = number of pressure levels
-!  n2 = number of grid point for which calculate RM,LM,Mean6kmwind
+!  Description:
+!  Looping subroutine to apply the Bunkers et al. [2000] internal dynamics 
+!  method for estimating supercell storm motion for a 2D-array (n2,nk) 
+!  of vector winds at known heights, and near surface winds (either lowest
+!  model level, or 10m AGL winds). Data are interpolated to 13 fixed layers at
+!  500m intervals following the optimal method for surface-based storms, and
+!  storm motion calculated using the empirically determined propagation of
+!  7.5 m/s orthogonal to the 0-6km mean wind as a ratio to the 0-6km mean shear.!  Returns storm motions for the inferred right (V_{RM}) and left (V_{LM})
+!  moving supercells, along with the 0-6km mean wind.   
+!  
+!  Equations:
+!  V_{RM}= V_{mean} \plus 7.5\times[\frac{V_{shear}\times \uvec{k}}{\| V_{shear}
+!  \|}]  
+!  
+!  V_{LM}= V_{mean} \minus 7.5\times[\frac{ \uvec{k}\times V_{shear}}{\|
+!  V_{shear} \|}]   
+!
+!  For further details see: 
+!  Bunkers et al. [2000]: Predicting supercell motion using a new hodograph
+!  technique. Weather and forecasting, 15(1), 61-79.
+!-----------------------------------------------------------------------
+!  Inputs:
+!  U3d,V3d = 2D zonal and meridional winds of shape (n2,nk). Units m/s.
+!  AGLH3d = above ground level height of shape (n2, nk). Units m.
+!  nk = number of levels (model or pressure) of shape (nk). Integer.
+!  n2 = collapsed dimension of grid points for which calculate motions. Integer.
+!
+!  Outputs: 
+!  RM = Right-moving storm motion (assuming a supercell) of shape (n2) in m/s.
+!  LM = Left-moving storm motion (assuming a supercell) of shape (n2) in m/s.
+!  Mean6kmwind = 0-6km Mean Wind calculated as an intemediary in m/s.
 !-----------------------------------------------------------------------
     implicit none
 
@@ -52,9 +79,18 @@
 !
 !  Disclaimer:  This code is made available WITHOUT WARRANTY.
 !-----------------------------------------------------------------------
-!  U,V = zonal and meridional wind
-!  AGLH = above ground level height
-!  nk = number of pressure levels
+!  Description:
+!  Subroutine to perform pointwise the operation described in bunkers_loop.
+!-----------------------------------------------------------------------
+!  Input:
+!  U,V = zonal and meridional wind for a single grid point (m/s) of shape nk.
+!  AGLH = above ground level height for a single grid point (m) of shape nk. 
+!  nk = number of levels. Integer.
+!   
+!  Output: 
+!  RM = Right-moving storm motion (assuming a supercell) in m/s.
+!  LM = Left-moving storm motion (assuming a supercell) in m/s.
+!  Mean6kmwind = 0-6km Mean Wind calculated as an intemediary in m/s.
 !-----------------------------------------------------------------------
     implicit none
 
@@ -144,6 +180,8 @@
 
 !-----------------------------------------------------------------------
 !ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+! DINTER2DZ - Subroutine to perform an interpolation to fixed values over
+! an unstructured grid.  
 !-----------------------------------------------------------------------
 
     SUBROUTINE DINTERP2DZ(V3D,Z,LOC,V2D,N2,NZ)
