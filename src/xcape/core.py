@@ -1,5 +1,7 @@
+#Copyright (c) 2020 xcape Developers.
 """
-Numpy API for xcape.
+Numpy API for xcape, for calculation of Convective Available Potential Energy (CAPE) 
+and Storm Relative Helicity (SRH).
 """
 
 from functools import reduce
@@ -14,9 +16,18 @@ from .srh import srh as _srh
 from .stdheight import stdheight as _stdheight
 
 def _prod(v):
+    '''
+    Lambda function for products between two arrays.
+    '''
     return reduce(lambda x, y: x*y, v)
 
 def _reshape_inputs(*args):
+    '''
+    Function to reshape multiple arrays of input data from, i.e., native 4D (X,Y,T,Z) format 
+    to a 2D vertical array (XYT,Z), or any (X1,X2,X3,X4...,Z) to (X1*X2*X3*X4...,Z) to allow 
+    for parallelization of calculation for desired parameter. 
+    Called by functions _calc_*_numpy. 
+    '''
     a0 = args[0]
     shape = a0.shape
     for a in args:
@@ -32,6 +43,12 @@ def _reshape_inputs(*args):
     return args_2d
 
 def _reshape_outputs(*args, shape=None):
+    '''
+    Function to reshape arrays of calculated output data (X1*X2*X3*X4...Z) to the original 
+    input shape minus the Z dimension (X1,X2,X3,X4,...) to allow 
+    for parallelization of calculation for desired parameter.
+    Called by _calc_*_numpy. 
+    '''
     if len(shape)==1:
         target_shape = (1,)
     else:
@@ -39,6 +56,13 @@ def _reshape_outputs(*args, shape=None):
     return [np.reshape(a.transpose(), target_shape) for a in args]
 
 def _reshape_outputs_uv_components(*args, shape=None):
+    '''
+    Function to reshape arrays of calculated output data with 2 components (X1*X2*X3*X4...Z,2) 
+    to the original input shape minus the Z dimension (X1,X2,X3,X4,...,2) to allow 
+    for parallelization of calculation for desired parameter. This is most commonly
+    applicable to wind or storm motion components. 
+    Called by _calc_srh_numpy. 
+    '''
     if len(shape)==1:
         target_shape = (2,)
     else:
@@ -48,6 +72,12 @@ def _reshape_outputs_uv_components(*args, shape=None):
     return [np.reshape(a, target_shape) for a in args]
 
 def _reshape_surface_inputs(*args):
+    '''
+    Function to reshape multiple arrays of input data from, i.e., native 3D (X,Y,T) format 
+    to a 2D vertical array (XYT), or any (X1,X2,X3,X4...) to (X1*X2*X3*X4...) to allow 
+    for parallelization of calculation for desired parameter. 
+    Called by functions _calc_*_numpy. 
+    '''
     a0 = args[0]
     shape = a0.shape
     for a in args:
@@ -82,6 +112,9 @@ def _cape_dummy(*args,**kwargs):
 
 
 def _any_dask_array(*args):
+    '''
+    Check function to assess whether input array is a dask array to select parallelized implementation.
+    '''
     return any([isinstance(a, da.Array) for a in args])
 
 def calc_cape(*args, **kwargs):
@@ -230,7 +263,7 @@ def _calc_cape_numpy(*args,
 
 def calc_srh(*args, **kwargs):
     """
-    Calculate cape for a set of profiles over the first axis of the arrays.
+    Calculate storm relative helicity for a vectorized set of profiles over the first axis of the arrays.
 
     Parameters
     ----------
