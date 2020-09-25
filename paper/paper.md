@@ -35,17 +35,13 @@ Storm Relative Helicity (SRH).
 CAPE is a measure of the potential for instability of an atmospheric parcel [ref]. It corresponds to the integrated virtual temperature difference between a theoretical parcel and the environmental profile while the parcel is warmer than the environment, while CIN corresponds to the integration of the negative area. 
 
 \begin{equation}
-
- \text{CAPE} = g \int_{LFC}^{EL} \frac{(\Theta_v_{parcel} - \Theta_v_{env})}{  \
+\text{CAPE} = g \int_{LFC}^{EL} \frac{(\Theta_v_{parcel} - \Theta_v_{env})}{  \
               \Theta_v_{env}} d\text{dz}
-
 \end{equation}
 
 \begin{equation}
-
 \text{CIN} = g \int_{SFC}^{LFC} \frac{(\Theta_v_{parcel} - \Theta_v_{env})}{  \
               \Theta_v_{env}} d\text{dz}
-
 \end{equation}
 
 Where SFC is surface, LFC is the Level of free convection, and EL is the equilibrium level, $Theta_v_{parcel}$ is the virtual potential temperature of the parcel, $Theta_v_{env}$ is the virtual potential temperature of the environment, both in K (true? necessary to say?), $g$ the gravitational acceleration, and $z$ the height above ground. 
