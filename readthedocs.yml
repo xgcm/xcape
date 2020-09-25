@@ -1,10 +1,12 @@
 # Required
 version: 2
 
+conda:
+    file: doc/environment.yml
+
 python:
   version: 3.8
   install:
-    - requirements: doc/requirements.txt
     - method: pip
       path: .
 
