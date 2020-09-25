@@ -1,5 +1,7 @@
+#Copyright (c) 2020 xcape Developers.
 """
-Numpy API for xcape.
+Numpy API for xcape, for calculation of Convective Available Potential Energy (CAPE) 
+and Storm Relative Helicity (SRH).
 """
 
 from functools import reduce
@@ -14,9 +16,18 @@ from .srh import srh as _srh
 from .stdheight import stdheight as _stdheight
 
 def _prod(v):
+    '''
+    Lambda function for products between two arrays.
+    '''
     return reduce(lambda x, y: x*y, v)
 
 def _reshape_inputs(*args):
+    '''
+    Function to reshape multiple arrays of input data from, i.e., native 4D (X,Y,T,Z) format 
+    to a 2D vertical array (XYT,Z), or any (X1,X2,X3,X4...,Z) to (X1*X2*X3*X4...,Z) to allow 
+    for parallelization of calculation for desired parameter. 
+    Called by functions _calc_*_numpy. 
+    '''
     a0 = args[0]
     shape = a0.shape
     for a in args:
@@ -32,6 +43,12 @@ def _reshape_inputs(*args):
     return args_2d
 
 def _reshape_outputs(*args, shape=None):
+    '''
+    Function to reshape arrays of calculated output data (X1*X2*X3*X4...Z) to the original 
+    input shape minus the Z dimension (X1,X2,X3,X4,...) to allow 
+    for parallelization of calculation for desired parameter.
+    Called by _calc_*_numpy. 
+    '''
     if len(shape)==1:
         target_shape = (1,)
     else:
@@ -39,6 +56,13 @@ def _reshape_outputs(*args, shape=None):
     return [np.reshape(a.transpose(), target_shape) for a in args]
 
 def _reshape_outputs_uv_components(*args, shape=None):
+    '''
+    Function to reshape arrays of calculated output data with 2 components (X1*X2*X3*X4...Z,2) 
+    to the original input shape minus the Z dimension (X1,X2,X3,X4,...,2) to allow 
+    for parallelization of calculation for desired parameter. This is most commonly
+    applicable to wind or storm motion components. 
+    Called by _calc_srh_numpy. 
+    '''
     if len(shape)==1:
         target_shape = (2,)
     else:
@@ -48,6 +72,12 @@ def _reshape_outputs_uv_components(*args, shape=None):
     return [np.reshape(a, target_shape) for a in args]
 
 def _reshape_surface_inputs(*args):
+    '''
+    Function to reshape multiple arrays of input data from, i.e., native 3D (X,Y,T) format 
+    to a 2D vertical array (XYT), or any (X1,X2,X3,X4...) to (X1*X2*X3*X4...) to allow 
+    for parallelization of calculation for desired parameter. 
+    Called by functions _calc_*_numpy. 
+    '''
     a0 = args[0]
     shape = a0.shape
     for a in args:
@@ -82,49 +112,102 @@ def _cape_dummy(*args,**kwargs):
 
 
 def _any_dask_array(*args):
+    '''
+    Check function to assess whether input array is a dask array to select parallelized implementation.
+    '''
     return any([isinstance(a, da.Array) for a in args])
 
 def calc_cape(*args, **kwargs):
     """
-    Calculate cape for a set of profiles over the first axis of the arrays.
+    Calculate Convective Available Potential Energy (CAPE) and Convective Inhibition (CIN).
+    
+    Description:
+    ------------
+    Calculate the CAPE and CIN over a a 3D gridded field, by iterating over a point profile 
+    integration of the area between an environmental vertical profile and a specified parcel profile.
+    The integration is performed by a trapezoidal approach iteratively over a specified pressure
+    increment. Parcel properties are user selected between a surface-based, a specified
+    mixed-layer depth and most unstable. Adiabat for parcel trajectory is specifiable as one of
+    pseudo-liquid, reversible-liquid, pseudo-ice and reversible-ice depending on the end application. 
+    Vertical level options should be specified based on the input model data, whether defined on 
+    pressure levels or model levels.
+    
+    Formula:
+    --------
+    Calulates CAPE for a user specified set of parcel options based on the integration:
+    .. math:: \text{CAPE} = g \int_{LFC}^{EL} \frac{(\Theta_v_{parcel} - \Theta_v_{env})}{  \
+              \Theta_v_{env}} d\text{dz}
 
-    Parameters
-    ----------
-    p : array-like
-        Pressure in mb.
+    .. math:: \text{CIN} = g \int_{SFC}^{LFC} \frac{(\Theta_v_{parcel} - \Theta_v_{env})}{  \
+              \Theta_v_{env}} d\text{dz}
+    
+    * :math:'CAPE' Convective available potential energy 
+    * :math:'CIN' Convective inhibition
+    * :math:'LFC' Level of free convection
+    * :math:'EL' Equilibrium level
+    * :math:'g' Gravitational acceleration
+    * :math:'\Theta_v_{parcel}' Virtual potential temperature of the parcel
+    * :math:'\Theta_v_{env}' Virtual potential temperature of the environment
+    * :math:'z' height above ground
+
+    Required Parameters:
+    -----------
+    Six input arguments are required, followed by any user specified keyword arguments as follows:
+    p : 'array-like'
+        Atmospheric pressure at each vertical level in hPa.
         When vertical_lev='model', p.shape = t.shape = (nlev, x, y, ...)
         When vertical_lev='pressure', p.shape = t.shape[0] = (nlev)
-    t : array-like
-        Temperature in Celsius
-    td : array-like
-        Dew point temperature in Celsius
-    ps : array-like
-        Surface Pressure in mb.
-    ts : array-like
-        Surface Temperature in Celsius
-    tds : array-like
-        Surface Dew point temperature in Celsius
+    t : 'array-like'
+        Atmospheric temperature in Celsius. Vertical shape should be identical to pressure. 
+    td : 'array-like'
+        Atmospheric dew point temperature in Celsius. Vertical shape should be identical to pressure.
+    ps : 'array-like'
+        Surface Pressure in hPa.
+    ts : 'array-like'
+        Surface Temperature in Celsius.
+    tds : 'array-like'
+        Surface dew point temperature in Celsius.
+    
+    Default usage:
+    --------------
+    cape,cin = core.calc_cape(p, t, td, ps, ts, tds, source ='surface',
+                  mldepth=500., adiabat='pseudo-liquid',pinc = 500., 
+                  method='fortran', vertical_lev='sigma')
+
+    Optional Kwargs:
+    ---------
+    The following options are user selected:
     source : {'surface', 'most-unstable', 'mixed-layer'}
+        Select parcel based on desired assumptions under parcel theory. Surface-based parcels 
+        are subject to substantial errors depending on surface heating and source data, and 
+        can be influenced by moisture depth. Mixed-layer parcels are generally a good assumption
+        for profiles at peak heating when the boundary layer is deeply mixed to approximately the
+        boundary layer depth. Most-unstable is defined by the layer below 500hPa with the highest 
+        equivalent potential temperature. 
     ml_depth : float, optional
-        Depth (m) of mixed layer. Only applies when source='mixed-layer'
+        Depth (m) of mixed layer. Only applies when the source='mixed-layer'
     adiabat : {'pseudo-liquid', 'reversible-liquid','pseudo-ice', 'reversible-ice'}
     pinc : float, optional
-        Pressure increment (Pa) - Recommended between 1000. (faster) and 100 (slower)
+        Pressure increment for integration (Pa) - Recommended usage (between 1000 and 100) is 
+        based on desired speed, with accuracy of the calculation increasing with smaller 
+        integration increments. 
     method : {'fortran', 'numba'}
-        Which numerical routine to use
+        Option to select numerical approach using wrapped Fortran 90 or a Numba python variant.
     vertical_lev : {'sigma', 'pressure'}
-        Which vertical grid is used
+        Option to select vertical grid, between model coordinates and pressure levels.
+
     Returns
     -------
-    cape : array-like
+    cape : 'array-like'
         Convective available potential energy (J/Kg)
-    cin : array-like
+    cin : 'array-like'
         Convective inhibition (J/Kg)
-    MUlev : array-like
-        Most Unstable level location index (-)
-    zMUlev : array-like
-        height of MUlev (m)
+    MUlev : 'array-like'
+        Most Unstable level location index (only returned for source: {'most-unstable'})
+    zMUlev : 'array-like'
+        height of MUlev (m) (only returned for source: {'most-unstable'}
      """
+
     if len(args)<6:
         raise ValueError("Too little arguments.")     
         
@@ -140,9 +223,11 @@ def calc_cape(*args, **kwargs):
     else:
         return _calc_cape_numpy(*args, **kwargs)
     
-
 def _calc_cape_gufunc(*args, **kwargs):
-    
+    ''' Wrapped function for cape calculation for dask arrays to leverage parallelized calculation
+        over the grid.
+    '''
+
     if (kwargs['vertical_lev']=='sigma'):
         signature = "(i),(i),(i),(),(),()->(),()"
         output_dtypes = ('f4','f4')
@@ -166,7 +251,13 @@ def _calc_cape_numpy(*args,
                      source='surface', ml_depth=500.,
                      adiabat='pseudo-liquid',pinc=500., method='fortran',
                      vertical_lev='sigma'):
+    ''' 
+    Wrapper function for cape calculation to setup optional kwargs and ensure data is
+    is provided in a format suitable output to call either the fortran or numba implementations
+    of CAPE and CIN calculation. 
+    '''
 
+ 
     p, t, td, ps, ts, tds = args
     
     original_shape = t.shape #shape of 3D variable, i.e. t (p could be 1d)
@@ -258,6 +349,7 @@ def calc_srh(*args, **kwargs):
     * :math:'z' height above ground
  
     For further details see Markowski and Richardson [2010], pages 230-231.
+
 
     Parameters
     ----------

@@ -10,8 +10,8 @@ For more information, including installation instructions, read the full
    :target: https://anaconda.org/conda-forge/xcape
 .. |DOI| image:: https://zenodo.org/badge/41581350.svg
    :target: https://zenodo.org/badge/latestdoi/41581350
-.. |Build Status| image:: https://travis-ci.org/xgcm/xcape.svg?branch=master
-   :target: https://travis-ci.org/xgcm/xcape
+.. |Build Status| image:: https://travis-ci.com/xgcm/xcape.svg?branch=master
+   :target: https://travis-ci.com/xgcm/xcape
    :alt: travis-ci build status
 .. |codecov| image:: https://codecov.io/github/xgcm/xcape/coverage.svg?branch=master
    :target: https://codecov.io/github/xgcm/xcape?branch=master
@@ -32,4 +32,3 @@ To Install Development Version
 
     python setup.py build_ext
     pip install -e . 
-
