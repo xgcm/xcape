@@ -1,5 +1,5 @@
 ---
-title: 'xcape: : Fast convective parameters for numpy, dask, and xarray’
+title: 'xcape: : Fast convective parameters for numpy, dask, and xarray'
 tags:
   - Python
   - Fortran
@@ -35,10 +35,12 @@ commonly used in meteorology: Convective Available Potential Energy (CAPE) and
 Storm Relative Helicity (SRH). 
 
 CAPE is a measure of the potential for instability of an atmospheric parcel [@bibref]. It corresponds to the integrated virtual temperature difference between a theoretical parcel and the environmental profile while the parcel is warmer than the environment, while CIN corresponds to the integration of the negative area. 
+
 \begin{equation}
  \text{CAPE} = g \int_{LFC}^{EL} \frac{(\Theta_v_{parcel} - \Theta_v_{env})}{  \
               \Theta_v_{env}} d\text{dz}
 \end{equation}
+
 \begin{equation}
 \text{CIN} = g \int_{SFC}^{LFC} \frac{(\Theta_v_{parcel} - \Theta_v_{env})}{  \
               \Theta_v_{env}} d\text{dz}
