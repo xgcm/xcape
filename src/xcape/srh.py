@@ -1,6 +1,6 @@
 
 def srh(u_2d, v_2d, aglh_2d, u_s, v_s, aglh_s, pres_lev_pos, depth, type_grid, output):
-     ''' 
+    """        
      Description:
      ------------
      Function called by calc_srh (core.py) to perform Bunkers storm motion 
@@ -9,7 +9,7 @@ def srh(u_2d, v_2d, aglh_2d, u_s, v_s, aglh_s, pres_lev_pos, depth, type_grid, o
      on 2-dimensions (collapsed grid and vertical) which are specified 
      in the call to this function. For full description, see function 
      calc_srh in core.py, or in Bunkers_model_lev.f90.
-     
+
      Parameters:
      ------------ 
      u_2d,v_2d :    'array-like' 
@@ -30,7 +30,7 @@ def srh(u_2d, v_2d, aglh_2d, u_s, v_s, aglh_s, pres_lev_pos, depth, type_grid, o
      output:        'Integer'
                     If set to 1, only return SRH, otherwise return SRH and 
                     motions.
-     '''        
+    """        
                 
     # nlev has to be the first dimension
     # nlev here is the number of levels in 3d variables (without surface level)
