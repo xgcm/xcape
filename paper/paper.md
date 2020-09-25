@@ -37,20 +37,27 @@ Storm Relative Helicity (SRH).
 CAPE is a measure of the potential for instability of an atmospheric parcel [@bibref]. It corresponds to the integrated virtual temperature difference between a theoretical parcel and the environmental profile while the parcel is warmer than the environment, while CIN corresponds to the integration of the negative area. 
 
 \begin{equation}
+
  \text{CAPE} = g \int_{LFC}^{EL} \frac{(\Theta_v_{parcel} - \Theta_v_{env})}{  \
               \Theta_v_{env}} d\text{dz}
+
 \end{equation}
 
 \begin{equation}
+
 \text{CIN} = g \int_{SFC}^{LFC} \frac{(\Theta_v_{parcel} - \Theta_v_{env})}{  \
               \Theta_v_{env}} d\text{dz}
+
 \end{equation}
 
 Where SFC is surface, LFC is the Level of free convection, and EL is the equilibrium level, $Theta_v_{parcel}$ is the virtual potential temperature of the parcel, $Theta_v_{env}$ is the virtual potential temperature of the environment, both in K (?), $g$ the gravitational acceleration, and $z$ the height above ground. 
 
 SRH is a measure of the potential for updraft rotation in supercells, and is often applied to anticipating tornadic storms [@bibname] (Davies-Jones 1984, Davies-Jones et al. 1990, Kerr and Darkow 1996). It is a quantity proportional to streamwise vorticity and storm-relative winds, defined as: 
+
 \begin{equation}
+
   SRH=\int_{0}^{h}(V-C).\omega dz   
+
 \end{equation}
 
 Where $V$ is the ground relative wind vector $ms^{-1}$, $C$ is the storm motion $ms^{-1}$, $\omega$ is the horizontal vorticity vector $s^{-1}$, and the resulting parameter SRH has units of $m^{2}s^{-2}$. SRH is typically calculated by an integration of some depth depending on the application,
