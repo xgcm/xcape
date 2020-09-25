@@ -235,7 +235,9 @@ def calc_srh(*args, **kwargs):
     Description:
     ------------
     Calculate SRH over a predefined depth for a N-dimensional gridded field. 
-    Performs a point profile integration of the area between the hodograph and      the vectors between the estimated storm motion vector at the bottom and top     layer. The calculation assumes that the storm motion is described by the
+    Performs a point profile integration of the area between the hodograph and      
+    the vectors between the estimated storm motion vector at the bottom and top     
+    layer. The calculation assumes that the storm motion is described by the
     un-weighted mean 0-6 km wind vector subsampled at 500m intervals, with a 
     left or right moving storm deviating by 7.5 m/s perpendicular to this 
     mean wind, following the empirically estimated approach defined by 
@@ -324,9 +326,10 @@ def calc_srh(*args, **kwargs):
         return _calc_srh_numpy(*args, **kwargs)
 
 def _calc_srh_gufunc(*args, **kwargs):
-     ''' Wrapped function for SRH calculation for dask arrays to leverage 
-         parallelized calculation over the grid. Called by calc_srh.
-     '''
+    """
+    Wrapped function for SRH calculation for dask arrays to leverage 
+    parallelized calculation over the grid. Called by calc_srh.
+    """
     
     if (kwargs['vertical_lev']=='sigma'):
         signature = "(i),(i),(i),(i),(i),(),(),(),(),()->(),()"
@@ -349,14 +352,14 @@ def _calc_srh_gufunc(*args, **kwargs):
 # the numpy version of the algorithm
 def _calc_srh_numpy(*args,
                     depth = 3000, vertical_lev='sigma',output_var='srh'):    
-    ''' 
+    """ 
      Wrapper function for SRH calculation to setup optional kwargs and 
      ensure data is provided in a format suitable output to call the 
      Fortran implementation of SRH calculation. Also calculates standard
      height using the hypsometric equation, which necessitates the passing
      of pressure, temperature and dewpoint temperature. Called by 
      _calc_srh_gufunc.   
-     '''    
+    """    
 
 
     p, t, td, u, v,  ps, ts, tds, us, vs = args
