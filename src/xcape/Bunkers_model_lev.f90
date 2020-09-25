@@ -16,7 +16,8 @@
 !  model level, or 10m AGL winds). Data are interpolated to 13 fixed layers at
 !  500m intervals following the optimal method for surface-based storms, and
 !  storm motion calculated using the empirically determined propagation of
-!  7.5 m/s orthogonal to the 0-6km mean wind as a ratio to the 0-6km mean shear.!  Returns storm motions for the inferred right (V_{RM}) and left (V_{LM})
+!  7.5 m/s orthogonal to the 0-6km mean wind as a ratio to the 0-6km mean shear.
+!  Returns storm motions for the inferred right (V_{RM}) and left (V_{LM})
 !  moving supercells, along with the 0-6km mean wind.   
 !  
 !  Equations:
