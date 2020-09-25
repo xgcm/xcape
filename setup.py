@@ -29,6 +29,10 @@ CLASSIFIERS = [
 INSTALL_REQUIRES = ['xarray>=0.14.1', 'dask', 'numpy>=1.16']
 PYTHON_REQUIRES = '>=3.6'
 
+DESCRIPTION = "Fast convective parameters for numpy, dask, and xarray"
+def readme():
+    with open('README.rst') as f:
+        return f.read()
 
 # figure out which compiler we're going to use
 compiler = get_default_fcompiler()
@@ -85,10 +89,16 @@ ext_stdh_pl = Extension(name = 'stdheight_2D_pressure_lev',
                              extra_f90_compile_args=f90flags,
                              f2py_options=['--quiet'])
 
-DESCRIPTION = "Fast convective parameters for numpy, dask, and xarray"
-def readme():
-    with open('README.rst') as f:
-        return f.read()
+# https://github.com/readthedocs/readthedocs.org/issues/5512#issuecomment-475073310
+on_rtd = os.environ.get('READTHEDOCS') == 'True'
+if on_rtd:
+    ext_modules = []
+    INSTALL_REQUIRES = []
+else:
+    ext_modules = [ext_cape_ml, ext_cape_pl,
+                   ext_bunkers_ml, ext_bunkers_pl,
+                   ext_srh_ml, ext_srh_pl,
+                   ext_stdh_ml, ext_stdh_pl]
 
 setup(name=DISTNAME,
       version=versioneer.get_version(),
@@ -105,9 +115,5 @@ setup(name=DISTNAME,
       package_dir={"": "src"},
       packages=find_packages("src"),
       ext_package='xcape',
-      ext_modules = [ext_cape_ml, ext_cape_pl,
-                     ext_bunkers_ml, ext_bunkers_pl,
-                     ext_srh_ml, ext_srh_pl,
-                     ext_stdh_ml, ext_stdh_pl]
-
+      ext_modules = ext_modules
       )

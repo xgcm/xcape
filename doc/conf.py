@@ -15,6 +15,7 @@
 import sys
 import os
 import xcape
+import sphinx_pangeo_theme
 
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
@@ -39,11 +40,10 @@ extensions = [
     'sphinx.ext.autosummary',
     'sphinx.ext.extlinks',
     'sphinx.ext.viewcode',
-    'sphinx.ext.intersphinx',
     'numpydoc',
-    'nbsphinx',
-    'IPython.sphinxext.ipython_directive',
-    'IPython.sphinxext.ipython_console_highlighting',
+    # 'nbsphinx',
+    # 'IPython.sphinxext.ipython_directive',
+    # 'IPython.sphinxext.ipython_console_highlighting',
 ]
 
 # never execute notebooks: avoids lots of expensive imports on rtd
@@ -136,16 +136,8 @@ pygments_style = 'sphinx'
 # -- Options for HTML output ----------------------------------------------
 
 on_rtd = os.environ.get('READTHEDOCS', None) == 'True'
-
-if not on_rtd:  # only import and set the theme if we're building docs locally
-    import sphinx_rtd_theme
-    html_theme = 'sphinx_rtd_theme'
-    html_theme_path = [sphinx_rtd_theme.get_html_theme_path()]
-
-# The theme to use for HTML and HTML Help pages.  See the documentation for
-# a list of builtin themes.
-#tml_theme = 'default'
-html_theme = "sphinx_rtd_theme"
+html_theme = "pangeo"
+html_sidebars = {"index": [], "**": ["localtoc.html", "srclinks.html"]}
 
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the

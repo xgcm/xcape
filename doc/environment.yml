@@ -1,18 +1,10 @@
-name: xcape_test_env
+name: xcape_docs
 dependencies:
   - python=3.6
-  - xarray
-  - netcdf4
-  - numpy>=1.16
-  - pytest
+  - numpy
   - numpydoc
   - sphinx
-  - ipython
-  - matplotlib
-  - jupyter_client
-  - ipykernel
-  - pandoc
+  - sphinx_rtd_theme
   - pip
   - pip:
-    - nbsphinx
-    - sphinx_rtd_theme
+    - sphinx_pangeo_theme
