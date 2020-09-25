@@ -62,14 +62,14 @@ Where $V$ is the ground relative wind vector $ms^{-1}$, $C$ is the storm motion 
 
 
 It allows for post-processing of 1D observed profile data to 4D gridded 
-model data. By wrapping low-level language routines (Fortran) for speed, and 'dask' for rapid and efficient scaling of computation, `xcape` allows for fast computation of such intensive calculations…..
+model data. By wrapping low-level language routines (Fortran) for speed, and `dask` for rapid and efficient scaling of computation, `xcape` allows for fast computation of such intensive calculations…..
 
-The API for 'xcape' was designed… ryan
+The API for `xcape` was designed… ryan
 
 # State of the field 
 Current alternative to `xcape`, such as metpy and sharpy, …. (if we say that our is much faster we have to include an example to test it)
 
-Given the significant resources that are usually necessary to calculate CAPE and SRH, 'xcape' ability to calculate them in a fast and scalable way, this package will be of interest to the global convective storm and tropical meteorology communities, by forecasters, researcher, and students as well.
+Given the significant resources that are usually necessary to calculate CAPE and SRH, `xcape` ability to calculate them in a fast and scalable way, this package will be of interest to the global convective storm and tropical meteorology communities, by forecasters, researcher, and students as well.
 
 
 
@@ -81,12 +81,12 @@ Citations to entries in paper.bib should be in
 format.
 
 If you want to cite a software repository URL (e.g. something on GitHub without a preferred
-citation) then you can do it with the example BibTeX entry below for #@fidgit.
+citation) then you can do it with the example BibTeX entry below for fidgit.
 
 For a quick reference, the following citation commands can be used:
-#- `@author:2001`  ->  "Author et al. (2001)"
-#- `[@author:2001]` -> "(Author et al., 2001)"
-#- `[@author1:2001; @author2:2001]` -> "(Author1 et al., 2001; Author2 et al., 2002)"
+#- `author:2001`  ->  "Author et al. (2001)"
+#- `[author:2001]` -> "(Author et al., 2001)"
+#- `[author1:2001; uthor2:2001]` -> "(Author1 et al., 2001; Author2 et al., 2002)"
 
 
 # Acknowledgements
