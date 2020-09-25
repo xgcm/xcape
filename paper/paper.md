@@ -4,14 +4,14 @@ tags:
   - Python
   - Fortran
 authors:
-  - name: Chiara Lepore^[corresponding author]
+  - name: Chiara Lepore
     orcid: 0000-0002-1606-6982
     affiliation: 1 
   - name: Ryan Abernathey
-  orcid: 0000-0000-0000-0000
-    affiliation: "1, 2" # (Multiple affiliations must be quoted)
+    orcid: 0000-0000-0000-0000
+    affiliation: "1, 2"
   - name: John T. Allen
-  orcid: 0000-0000-0000-0000
+    orcid: 0000-0000-0000-0000
     affiliation: 3
 affiliations:
  - name: Lamonth-Doherty Earth Observatory
