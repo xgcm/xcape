@@ -2,8 +2,6 @@ python:
    version: 3.8
    install:
      - requirements: doc/requirements.txt
-   setup_py_install: true
-
 
 sphinx:
   configuration: doc/conf.py
