@@ -8,10 +8,8 @@ authors:
     orcid: 0000-0002-1606-6982
     affiliation: 1 
   - name: Ryan Abernathey
-    orcid: 0000-0000-0000-0000
     affiliation: "1, 2"
   - name: John T. Allen
-    orcid: 0000-0000-0000-0000
     affiliation: 3
 affiliations:
  - name: Lamonth-Doherty Earth Observatory
