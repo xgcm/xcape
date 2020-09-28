@@ -1,6 +1,6 @@
 #Copyright (c) 2020 xcape Developers.
 """
-Numpy API for xcape, for calculation of Convective Available Potential Energy (CAPE) 
+Numpy API for xcape, for calculation of Convective Available Potential Energy (CAPE)
 and Storm Relative Helicity (SRH).
 """
 
@@ -10,7 +10,12 @@ import dask.array as da
 from .duck_array_ops import (reshape, ravel_multi_index, concatenate,
                              broadcast_arrays)
 
-from .cape_fortran import cape as _cape_fortran
+try:
+    from .cape_fortran import cape as _cape_fortran
+except ImportError:
+    # allows us to import on readthedocs
+    cape = None
+
 from .cape_numba import cape as _cape_numba
 from .srh import srh as _srh
 from .stdheight import stdheight as _stdheight
@@ -23,10 +28,10 @@ def _prod(v):
 
 def _reshape_inputs(*args):
     '''
-    Function to reshape multiple arrays of input data from, i.e., native 4D (X,Y,T,Z) format 
-    to a 2D vertical array (XYT,Z), or any (X1,X2,X3,X4...,Z) to (X1*X2*X3*X4...,Z) to allow 
-    for parallelization of calculation for desired parameter. 
-    Called by functions _calc_*_numpy. 
+    Function to reshape multiple arrays of input data from, i.e., native 4D (X,Y,T,Z) format
+    to a 2D vertical array (XYT,Z), or any (X1,X2,X3,X4...,Z) to (X1*X2*X3*X4...,Z) to allow
+    for parallelization of calculation for desired parameter.
+    Called by functions _calc_*_numpy.
     '''
     a0 = args[0]
     shape = a0.shape
@@ -44,10 +49,10 @@ def _reshape_inputs(*args):
 
 def _reshape_outputs(*args, shape=None):
     '''
-    Function to reshape arrays of calculated output data (X1*X2*X3*X4...Z) to the original 
-    input shape minus the Z dimension (X1,X2,X3,X4,...) to allow 
+    Function to reshape arrays of calculated output data (X1*X2*X3*X4...Z) to the original
+    input shape minus the Z dimension (X1,X2,X3,X4,...) to allow
     for parallelization of calculation for desired parameter.
-    Called by _calc_*_numpy. 
+    Called by _calc_*_numpy.
     '''
     if len(shape)==1:
         target_shape = (1,)
@@ -57,11 +62,11 @@ def _reshape_outputs(*args, shape=None):
 
 def _reshape_outputs_uv_components(*args, shape=None):
     '''
-    Function to reshape arrays of calculated output data with 2 components (X1*X2*X3*X4...Z,2) 
-    to the original input shape minus the Z dimension (X1,X2,X3,X4,...,2) to allow 
+    Function to reshape arrays of calculated output data with 2 components (X1*X2*X3*X4...Z,2)
+    to the original input shape minus the Z dimension (X1,X2,X3,X4,...,2) to allow
     for parallelization of calculation for desired parameter. This is most commonly
-    applicable to wind or storm motion components. 
-    Called by _calc_srh_numpy. 
+    applicable to wind or storm motion components.
+    Called by _calc_srh_numpy.
     '''
     if len(shape)==1:
         target_shape = (2,)
@@ -73,10 +78,10 @@ def _reshape_outputs_uv_components(*args, shape=None):
 
 def _reshape_surface_inputs(*args):
     '''
-    Function to reshape multiple arrays of input data from, i.e., native 3D (X,Y,T) format 
-    to a 2D vertical array (XYT), or any (X1,X2,X3,X4...) to (X1*X2*X3*X4...) to allow 
-    for parallelization of calculation for desired parameter. 
-    Called by functions _calc_*_numpy. 
+    Function to reshape multiple arrays of input data from, i.e., native 3D (X,Y,T) format
+    to a 2D vertical array (XYT), or any (X1,X2,X3,X4...) to (X1*X2*X3*X4...) to allow
+    for parallelization of calculation for desired parameter.
+    Called by functions _calc_*_numpy.
     '''
     a0 = args[0]
     shape = a0.shape
@@ -120,18 +125,18 @@ def _any_dask_array(*args):
 def calc_cape(*args, **kwargs):
     """
     Calculate Convective Available Potential Energy (CAPE) and Convective Inhibition (CIN).
-    
+
     Description:
     ------------
-    Calculate the CAPE and CIN over a a 3D gridded field, by iterating over a point profile 
+    Calculate the CAPE and CIN over a a 3D gridded field, by iterating over a point profile
     integration of the area between an environmental vertical profile and a specified parcel profile.
     The integration is performed by a trapezoidal approach iteratively over a specified pressure
     increment. Parcel properties are user selected between a surface-based, a specified
     mixed-layer depth and most unstable. Adiabat for parcel trajectory is specifiable as one of
-    pseudo-liquid, reversible-liquid, pseudo-ice and reversible-ice depending on the end application. 
-    Vertical level options should be specified based on the input model data, whether defined on 
+    pseudo-liquid, reversible-liquid, pseudo-ice and reversible-ice depending on the end application.
+    Vertical level options should be specified based on the input model data, whether defined on
     pressure levels or model levels.
-    
+
     Formula:
     --------
     Calulates CAPE for a user specified set of parcel options based on the integration:
@@ -140,8 +145,8 @@ def calc_cape(*args, **kwargs):
 
     .. math:: \text{CIN} = g \int_{SFC}^{LFC} \frac{(\Theta_v_{parcel} - \Theta_v_{env})}{  \
               \Theta_v_{env}} d\text{dz}
-    
-    * :math:'CAPE' Convective available potential energy 
+
+    * :math:'CAPE' Convective available potential energy
     * :math:'CIN' Convective inhibition
     * :math:'LFC' Level of free convection
     * :math:'EL' Equilibrium level
@@ -158,7 +163,7 @@ def calc_cape(*args, **kwargs):
         When vertical_lev='model', p.shape = t.shape = (nlev, x, y, ...)
         When vertical_lev='pressure', p.shape = t.shape[0] = (nlev)
     t : 'array-like'
-        Atmospheric temperature in Celsius. Vertical shape should be identical to pressure. 
+        Atmospheric temperature in Celsius. Vertical shape should be identical to pressure.
     td : 'array-like'
         Atmospheric dew point temperature in Celsius. Vertical shape should be identical to pressure.
     ps : 'array-like'
@@ -167,30 +172,30 @@ def calc_cape(*args, **kwargs):
         Surface Temperature in Celsius.
     tds : 'array-like'
         Surface dew point temperature in Celsius.
-    
+
     Default usage:
     --------------
     cape,cin = core.calc_cape(p, t, td, ps, ts, tds, source ='surface',
-                  mldepth=500., adiabat='pseudo-liquid',pinc = 500., 
+                  mldepth=500., adiabat='pseudo-liquid',pinc = 500.,
                   method='fortran', vertical_lev='sigma')
 
     Optional Kwargs:
     ---------
     The following options are user selected:
     source : {'surface', 'most-unstable', 'mixed-layer'}
-        Select parcel based on desired assumptions under parcel theory. Surface-based parcels 
-        are subject to substantial errors depending on surface heating and source data, and 
+        Select parcel based on desired assumptions under parcel theory. Surface-based parcels
+        are subject to substantial errors depending on surface heating and source data, and
         can be influenced by moisture depth. Mixed-layer parcels are generally a good assumption
         for profiles at peak heating when the boundary layer is deeply mixed to approximately the
-        boundary layer depth. Most-unstable is defined by the layer below 500hPa with the highest 
-        equivalent potential temperature. 
+        boundary layer depth. Most-unstable is defined by the layer below 500hPa with the highest
+        equivalent potential temperature.
     ml_depth : float, optional
         Depth (m) of mixed layer. Only applies when the source='mixed-layer'
     adiabat : {'pseudo-liquid', 'reversible-liquid','pseudo-ice', 'reversible-ice'}
     pinc : float, optional
-        Pressure increment for integration (Pa) - Recommended usage (between 1000 and 100) is 
-        based on desired speed, with accuracy of the calculation increasing with smaller 
-        integration increments. 
+        Pressure increment for integration (Pa) - Recommended usage (between 1000 and 100) is
+        based on desired speed, with accuracy of the calculation increasing with smaller
+        integration increments.
     method : {'fortran', 'numba'}
         Option to select numerical approach using wrapped Fortran 90 or a Numba python variant.
     vertical_lev : {'sigma', 'pressure'}
@@ -209,20 +214,20 @@ def calc_cape(*args, **kwargs):
      """
 
     if len(args)<6:
-        raise ValueError("Too little arguments.")     
-        
+        raise ValueError("Too little arguments.")
+
     if len(args)>6:
-        raise ValueError("Too many arguments.")     
-        
+        raise ValueError("Too many arguments.")
+
     allowed_vertical_levs = ['sigma', 'pressure']
     if kwargs['vertical_lev'] not in allowed_vertical_levs:
         raise ValueError(f"`vertrical_lev` must be one of: {allowed_vertical_levs}")
-        
+
     if _any_dask_array(*args):
         return _calc_cape_gufunc(*args, **kwargs)
     else:
         return _calc_cape_numpy(*args, **kwargs)
-    
+
 def _calc_cape_gufunc(*args, **kwargs):
     ''' Wrapped function for cape calculation for dask arrays to leverage parallelized calculation
         over the grid.
@@ -234,37 +239,37 @@ def _calc_cape_gufunc(*args, **kwargs):
     elif (kwargs['vertical_lev']=='pressure'):
         signature = "(i),(i),(i),(),(),(),()->(),()"
         output_dtypes = ('f4','f4')
-        
+
     if kwargs['source']=='most-unstable':
         signature += ",(),()"
         output_dtypes = output_dtypes + ('i4','f4')
 
     return da.apply_gufunc(_calc_cape_numpy, signature,
-                               *args, 
+                               *args,
                                output_dtypes=output_dtypes,
                                axis=-1,
                                vectorize=False,
                                **kwargs)
-    
+
 # the numpy version of the algorithm
-def _calc_cape_numpy(*args, 
+def _calc_cape_numpy(*args,
                      source='surface', ml_depth=500.,
                      adiabat='pseudo-liquid',pinc=500., method='fortran',
                      vertical_lev='sigma'):
-    ''' 
+    '''
     Wrapper function for cape calculation to setup optional kwargs and ensure data is
     is provided in a format suitable output to call either the fortran or numba implementations
-    of CAPE and CIN calculation. 
+    of CAPE and CIN calculation.
     '''
 
- 
+
     p, t, td, ps, ts, tds = args
-    
+
     original_shape = t.shape #shape of 3D variable, i.e. t (p could be 1d)
     original_surface_shape = ts.shape #shape of surface variable, i.e. ps
 
     # after this, all arrays are 2d shape (nlevs, npoints)
-    p_s1d, t_s1d, td_s1d = _reshape_surface_inputs(ps, ts, tds) 
+    p_s1d, t_s1d, td_s1d = _reshape_surface_inputs(ps, ts, tds)
     if len(p.shape) == 1:
         t_2d, td_2d = _reshape_inputs(t, td)
         p_2d = _reshape_inputs(p)[0]
@@ -274,18 +279,18 @@ def _calc_cape_numpy(*args,
         pres_lev_pos = np.ma.masked_less(temp_index,0).argmin(axis=0)
         # fortran convention
         pres_lev_pos = pres_lev_pos+1
-        
+
     elif (p.shape == t.shape)&(vertical_lev=='sigma'):
         p_2d, t_2d, td_2d = _reshape_inputs(p, t, td)
         flag_1d = 0
         pres_lev_pos = 1
 
     elif (p.shape == t.shape)&(vertical_lev=='pressure'):
-        raise ValueError("P should be 1d")     
+        raise ValueError("P should be 1d")
 
-    
-        
-    
+
+
+
     _source_options_ ={'surface':1, 'most-unstable':2, 'mixed-layer':3}
     _adiabat_options_ ={'pseudo-liquid':1, 'reversible-liquid':2,
                         'pseudo-ice':3, 'reversible-ice':4}
@@ -310,14 +315,14 @@ def _calc_cape_numpy(*args,
     else:
         raise ValueError('invalid method')
 
-    
+
     if _source_options_[source]==2:
         cape, cin, mulev, zmulev = _reshape_outputs(cape_2d, cin_2d, mulev, zmulev, shape=original_shape)
         return cape, cin, mulev, zmulev
     else:
         cape, cin = _reshape_outputs(cape_2d, cin_2d, shape=original_shape)
         return cape, cin
-    
+
 
 def calc_srh(*args, **kwargs):
     """
@@ -333,7 +338,7 @@ def calc_srh(*args, **kwargs):
         Temperature in Celsius
     td : array-like
         Dew point temperature in Celsius
-        
+
     ps : array-like
         Surface Pressure in mb.
     ts : array-like
@@ -346,7 +351,7 @@ def calc_srh(*args, **kwargs):
         Which vertical grid is used
     output_var : {'srh', 'all'}
         'srh' = for only srh
-        'all' = for srh, Bunkers' right-moving and left-moving storm component, 
+        'all' = for srh, Bunkers' right-moving and left-moving storm component,
                 mean not pressure averaged 6km wind
     Returns
     -------
@@ -359,7 +364,7 @@ def calc_srh(*args, **kwargs):
 
 def _calc_srh_gufunc(*args, **kwargs):
 
-    
+
     if (kwargs['vertical_lev']=='sigma'):
         signature = "(i),(i),(i),(i),(i),(),(),(),(),()->(),()"
         output_dtypes = ('f4','f4')
@@ -369,25 +374,25 @@ def _calc_srh_gufunc(*args, **kwargs):
     if kwargs['output_var']=='all':
         signature += ",(),(),(),(),(),()" #",(2),(2),(2)"
         output_dtypes = output_dtypes +  ('f4','f4','f4','f4','f4','f4') #('f4','f4','f4')
-        
+
     return da.apply_gufunc(_calc_srh_numpy, signature,
                                *args,
                                output_dtypes=output_dtypes,
                                axis=-1,
                                vectorize=False,
                                **kwargs)
-    
+
 
 # the numpy version of the algorithm
 def _calc_srh_numpy(*args,
-                    depth = 3000, vertical_lev='sigma',output_var='srh'):    
-    
+                    depth = 3000, vertical_lev='sigma',output_var='srh'):
+
     p, t, td, u, v,  ps, ts, tds, us, vs = args
     original_shape = t.shape #shape of 3D variable, i.e. p
     original_surface_shape = ts.shape #shape of surface variable, i.e. ps
-        
+
     # after this, all arrays are 2d shape (nlevs, npoints)
-    p_s1d, t_s1d, td_s1d, u_s1d, v_s1d = _reshape_surface_inputs(ps, ts,tds, us, vs) 
+    p_s1d, t_s1d, td_s1d, u_s1d, v_s1d = _reshape_surface_inputs(ps, ts,tds, us, vs)
     if len(p.shape) == 1:
         t_2d, td_2d, u_2d, v_2d = _reshape_inputs(t, td, u, v)
         p_2d = _reshape_inputs(p)[0]
@@ -403,10 +408,10 @@ def _calc_srh_numpy(*args,
         flag_1d = 0
         pres_lev_pos = 1
     elif (p.shape == t.shape)&(vertical_lev=='pressure'):
-        raise ValueError("P should be 1d")     
-    
+        raise ValueError("P should be 1d")
+
     _vertical_lev_options_ ={'sigma':1, 'pressure':2}
-    _output_var_options = {'srh':1, 'all':2}        
+    _output_var_options = {'srh':1, 'all':2}
 
     kwargs_stdh = dict(type_grid=_vertical_lev_options_[vertical_lev])
 
@@ -415,23 +420,23 @@ def _calc_srh_numpy(*args,
                                    flag_1d,
                                    pres_lev_pos, aglh0 = 2.,
                                    **kwargs_stdh)
-    
+
     kwargs = dict(type_grid=_vertical_lev_options_[vertical_lev],
                   output = _output_var_options[output_var])
-    
-    
+
+
     if _output_var_options[output_var] == 1:
-        srh_2d_rm, srh_2d_lm = _srh(u_2d, v_2d, aglh_2d, 
+        srh_2d_rm, srh_2d_lm = _srh(u_2d, v_2d, aglh_2d,
                       u_s1d, v_s1d, aglh_s1d,
-                      pres_lev_pos, depth, 
+                      pres_lev_pos, depth,
                       **kwargs)
         #_reshape_outputs returns a list
         srh_rm, srh_lm = _reshape_outputs(srh_2d_rm, srh_2d_lm, shape=original_shape)
         return srh_rm, srh_lm
     else:
-        srh_2d_rm, srh_2d_lm, rm_2d, lm_2d, mean_6km_2d = _srh(u_2d, v_2d, aglh_2d, 
+        srh_2d_rm, srh_2d_lm, rm_2d, lm_2d, mean_6km_2d = _srh(u_2d, v_2d, aglh_2d,
                                                           u_s1d, v_s1d, aglh_s1d,
-                                                          pres_lev_pos, depth, 
+                                                          pres_lev_pos, depth,
                                                           **kwargs)
 
         srh_rm, srh_lm = _reshape_outputs(srh_2d_rm, srh_2d_lm, shape=original_shape)
