@@ -4,11 +4,11 @@ API
 Core Module
 ===========
 
-.. automodule:: src.xcape.core
+.. automodule:: xcape.core
   :members:
 
 Xarray Module
 =============
 
-.. automodule:: src.xcape.xarray
+.. automodule:: xcape.xarray
   :members:

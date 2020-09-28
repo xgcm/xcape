@@ -1,6 +1,6 @@
 #Copyright (c) 2020 xcape Developers.
 """
-Numpy API for xcape, for calculation of Convective Available Potential Energy (CAPE) 
+Numpy API for xcape, for calculation of Convective Available Potential Energy (CAPE)
 and Storm Relative Helicity (SRH).
 """
 
@@ -10,8 +10,12 @@ import dask.array as da
 from .duck_array_ops import (reshape, ravel_multi_index, concatenate,
                              broadcast_arrays)
 
-from .cape_fortran import cape as _cape_fortran
-from .cape_numba import cape as _cape_numba
+# put this statement within try so that i don't import need to import
+# and compile the modules when I build the docs
+try:
+    from .cape_fortran import cape as _cape_fortran
+except ImportError:
+#from .cape_numba import cape as _cape_numba
 from .srh import srh as _srh
 from .stdheight import stdheight as _stdheight
 
