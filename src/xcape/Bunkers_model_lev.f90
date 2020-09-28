@@ -34,7 +34,7 @@
 !  Inputs:
 !  U3d,V3d = 2D zonal and meridional winds of shape (n2,nk). Units m/s.
 !  AGLH3d = above ground level height of shape (n2, nk). Units m.
-!  nk = number of levels (model or pressure) of shape (nk). Integer.
+!  nk = number of levels of shape (nk). Integer.
 !  n2 = collapsed dimension of grid points for which calculate motions. Integer.
 !
 !  Outputs: 
