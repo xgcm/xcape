@@ -15,6 +15,9 @@ from .duck_array_ops import (reshape, ravel_multi_index, concatenate,
 try:
     from .cape_fortran import cape as _cape_fortran
 except ImportError:
+    # allows us to import on readthedocs
+    cape = None
+    
 #from .cape_numba import cape as _cape_numba
 from .srh import srh as _srh
 from .stdheight import stdheight as _stdheight
