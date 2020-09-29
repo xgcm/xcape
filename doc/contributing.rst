@@ -1,23 +1,17 @@
 Contributor Guide
 =================
 
-.. note::
-
-  Parts of this document came from the `Xarray Contributing
-  Guide <http://xarray.pydata.org/en/stable/contributing.html>`_.
-
-
 This package is in very early stages. 
 
 
 Where to start?
-===============
+---------------
 
 All contributions, bug reports, bug fixes, documentation improvements,
 enhancements, and ideas are welcome.
 
 Bug reports and enhancement requests
-====================================
+------------------------------------
 
 Bug reports are an important part of making *xcape* more stable. Having a complete bug
 report will allow others to reproduce the bug and provide insight into fixing. See
@@ -31,8 +25,7 @@ pull requests to see if the issue has already been reported and/or fixed.
 Bug reports should:
 
 #. Include a short, self-contained Python snippet reproducing the problem.
-   You can format the code nicely by using `GitHub Flavored Markdown
-   <http://github.github.com/github-flavored-markdown/>`_::
+   You can format the code nicely by using `GitHub Flavored Markdown <http://github.github.com/github-flavored-markdown/>`_
 
 #. Explain why the current behavior is wrong/not desired and what you expect instead.
 
@@ -40,9 +33,9 @@ The issue will then show up to the *xcape* community and be open to comments/ide
 from others.
 
 Seek Support
-============
+------------
 
-Please `open an issue`<https://github.com/xgcm/xcape/issues> for any request of support. 
+Please `open an issue <https://github.com/xgcm/xcape/issues>`_ for any request of support. 
 
 
 GitHub repo: `https://github.com/xgcm/xcape <https://github.com/xgcm/xcape>`_
@@ -54,3 +47,9 @@ v0.1
 ~~~~
 
 First release
+
+.. note::
+
+  Parts of this document came from the `Xarray Contributing
+  Guide <http://xarray.pydata.org/en/stable/contributing.html>`_.
+
