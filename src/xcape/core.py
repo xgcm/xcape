@@ -141,69 +141,62 @@ def calc_cape(*args, **kwargs):
     
     Calulates CAPE for a user specified set of parcel options based on the integration:
     
-    .. math:: CAPE = g \int_{LFC}^{EL} \\frac{ (\Theta_v_{parcel} - \Theta_v_{env}) }{ \Theta_v_{env} } d\text{dz}
+    .. math:: \\text{CAPE} = g \\int_{LFC}^{EL} \\frac{ (\\Theta_v_{parcel} - \\Theta_v_{env})}{\\Theta_v_{env}} d\\text{dz}
 
-    .. math:: \text{CAPE} = g \int_{LFC}^{EL} \frac{ (\Theta_v_{parcel} - \Theta_v_{env})}{  \
-              \Theta_v_{env}} d\text{dz}
-
-    .. math:: CIN = g \int_{SFC}^{LFC} \\frac{(\Theta_v_{parcel} - \Theta_v_{env})}{\Theta_v_{env}} d\text{dz}
-
-    .. math:: \text{CIN} = g \int_{SFC}^{LFC} \frac{(\Theta_v_{parcel} - \Theta_v_{env})}{  \
-              \Theta_v_{env}} d\text{dz}
+    .. math:: \\text{CIN} = g \\int_{SFC}^{LFC} \\frac{(\\Theta_v_{parcel} - \\Theta_v_{env})}{\\Theta_v_{env}} d\\text{dz}
     
     * :math:`CAPE` = Convective available potential energy 
     * :math:`CIN` = Convective inhibition
     * :math:`LFC` = Level of free convection
     * :math:`EL` = Equilibrium level
     * :math:`g` = Gravitational acceleration
-    * :math:`\Theta_v_{parcel}` = Virtual potential temperature of the parcel
-    * :math:`\Theta_v_{env}` = Virtual potential temperature of the environment
+    * :math:`\\Theta_v_{parcel}` = Virtual potential temperature of the parcel
+    * :math:`\\Theta_v_{env}` = Virtual potential temperature of the environment
     * :math:`z` = height above ground
 
     Parameters
     ----------
-    p : 'array-like'
+    p : array-like
         Atmospheric pressure at each vertical level in hPa.
         When vertical_lev='model', p.shape = t.shape = (nlev, x, y, ...)
         When vertical_lev='pressure', p.shape = t.shape[0] = (nlev)
-    t : 'array-like'
+    t : array-like
         Atmospheric temperature in Celsius. Vertical shape should be identical to pressure. 
-    td : 'array-like'
+    td : array-like
         Atmospheric dew point temperature in Celsius. Vertical shape should be identical to pressure.
-    ps : 'array-like'
+    ps : array-like
         Surface Pressure in hPa.
-    ts : 'array-like'
+    ts : array-like
         Surface Temperature in Celsius.
-    tds : 'array-like'
+    tds : array-like
         Surface dew point temperature in Celsius.
-    source : {'surface', 'most-unstable', 'mixed-layer'}, optional (default is surface)
-        Select parcel based on desired assumptions under parcel theory. Surface-based parcels 
-        are subject to substantial errors depending on surface heating and source data, and 
-        can be influenced by moisture depth. Mixed-layer parcels are generally a good assumption
-        for profiles at peak heating when the boundary layer is deeply mixed to approximately the
-        boundary layer depth. Most-unstable is defined by the layer below 500hPa with the highest 
-        equivalent potential temperature. 
+    source : str, optional, default is 'surface'
+        Select parcel based on desired assumptions under parcel theory:
+        'surface' = Surface-based parcels are subject to substantial errors depending on surface heating and source data, and can be influenced by moisture depth. 
+        'mixed-layer' = Mixed-layer parcels are generally a good assumption for profiles at peak heating when the boundary layer is deeply mixed to approximately the boundary layer depth. 
+        'most-unstable' = Most-unstable is defined by the layer below 500hPa with the highest equivalent potential temperature.
     ml_depth : float, optional (default is 500)
         Depth (m) of mixed layer. Only applies when the source='mixed-layer'
-    adiabat : {'pseudo-liquid', 'reversible-liquid','pseudo-ice', 'reversible-ice'}, optional (default is 'pseudo-liquid')
-    pinc : float, optional (default is 500)
+    adiabat : str, optional, default is 'pseudo-liquid'
+        options include: 'pseudo-liquid', 'reversible-liquid','pseudo-ice', 'reversible-ice'  
+    pinc : float, optional, default is 500
         Pressure increment for integration (Pa) - Recommended usage (between 1000 and 100) is 
         based on desired speed, with accuracy of the calculation increasing with smaller 
         integration increments. 
-    method : {'fortran', 'numba'}, optional (default is 'fortran')
-        Option to select numerical approach using wrapped Fortran 90 or a Numba python variant.
-    vertical_lev : {'sigma', 'pressure'}, optional (default is 'sigma')
-        Option to select vertical grid, between model coordinates and pressure levels.
+    method : str, optional, default is 'fortran')
+        Option to select numerical approach using wrapped Fortran 90 or a Numba python variant (to be implemented)
+    vertical_lev : str, optional, default is 'sigma'
+        Option to select vertical grid, between model coordinates, 'sigma', and pressure levels, 'pressure'.
 
     Returns
     -------
-    cape : 'array-like'
+    cape : array-like
         Convective available potential energy (J/Kg)
-    cin : 'array-like'
+    cin : array-like
         Convective inhibition (J/Kg)
-    MUlev : 'array-like'
+    MUlev : array-like
         Most Unstable level location index (only returned for source: {'most-unstable'})
-    zMUlev : 'array-like'
+    zMUlev : array-like
         height of MUlev (m) (only returned for source: {'most-unstable'}
         
     Notes
