@@ -128,8 +128,7 @@ def calc_cape(*args, **kwargs):
     """
     Calculate Convective Available Potential Energy (CAPE) and Convective Inhibition (CIN).
     
-    Description
-    -----------
+    
     Calculate the CAPE and CIN over a a 3D gridded field, by iterating over a point profile 
     integration of the area between an environmental vertical profile and a specified parcel profile.
     The integration is performed by a trapezoidal approach iteratively over a specified pressure
@@ -139,8 +138,7 @@ def calc_cape(*args, **kwargs):
     Vertical level options should be specified based on the input model data, whether defined on 
     pressure levels or model levels.
     
-    Formula
-    -------
+    
     Calulates CAPE for a user specified set of parcel options based on the integration:
     .. math:: \text{CAPE} = g \int_{LFC}^{EL} \frac{(\Theta_v_{parcel} - \Theta_v_{env})}{  \
               \Theta_v_{env}} d\text{dz}
@@ -157,8 +155,8 @@ def calc_cape(*args, **kwargs):
     * :math:'\Theta_v_{env}' Virtual potential temperature of the environment
     * :math:'z' height above ground
 
-    Required Parameters
-    -------------------
+    Parameters
+    ----------
     Six input arguments are required, followed by any user specified keyword arguments as follows:
     p : 'array-like'
         Atmospheric pressure at each vertical level in hPa.
@@ -174,10 +172,10 @@ def calc_cape(*args, **kwargs):
         Surface Temperature in Celsius.
     tds : 'array-like'
         Surface dew point temperature in Celsius.
-    
+
     Default usage
     -------------
-    cape,cin = core.calc_cape(p, t, td, ps, ts, tds, source ='surface',
+    >>> cape,cin = core.calc_cape(p, t, td, ps, ts, tds, source ='surface',
                   mldepth=500., adiabat='pseudo-liquid',pinc = 500., 
                   method='fortran', vertical_lev='sigma')
 
