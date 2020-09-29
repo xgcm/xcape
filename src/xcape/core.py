@@ -188,19 +188,18 @@ def calc_cape(*args, **kwargs):
     -----
     CAPE is calculated on a user specified set of parcel options based on the integration:
     
-    .. math:: \text{CAPE} = g \int_{LFC}^{EL} \frac{(\Theta_v_{parcel} - \Theta_v_{env})}{\Theta_v_{env}} d\text{dz}
     
-    .. math:: CAPE = g \int_{LFC}^{EL} (\Theta_{v,parcel} - \Theta_{v,env}/(\Theta_{v,env}) d\text{dz}
+    .. math:: CAPE = g \int_{LFC}^{EL} (\Theta_{v,parcel} - \Theta_{v,env}/(\Theta_{v,env}) d\\text{dz}
 
-    .. math:: \\text{CIN} = g \\int_{SFC}^{LFC} \\frac{(\\Theta_v_{parcel} - \\Theta_v_{env})}{\\Theta_v_{env}} d\\text{dz}
+    .. math:: CIN = g \\int_{SFC}^{LFC} (\Theta_{v,parcel} - \Theta_{v,env})/(\Theta_{v,env}) d\\text{dz}
     
     * :math:`CAPE` = Convective available potential energy 
     * :math:`CIN` = Convective inhibition
     * :math:`LFC` = Level of free convection
     * :math:`EL` = Equilibrium level
     * :math:`g` = Gravitational acceleration
-    * :math:`\Theta_v_{parcel}` = Virtual potential temperature of the parcel
-    * :math:`\Theta_v_{env}` = Virtual potential temperature of the environment
+    * :math:`\Theta_{v,parcel}` = Virtual potential temperature of the parcel
+    * :math:`\Theta_{v,env}` = Virtual potential temperature of the environment
     * :math:`z` = height above ground    
   
     Examples
