@@ -143,7 +143,10 @@ def calc_cape(*args, **kwargs):
     
     .. math:: 
     
-    \\text{CAPE} = g \\int_{LFC}^{EL} \\frac{(\\Theta_v_{parcel} - \\Theta_v_{env})}{\\Theta_v_{env}} d\\text{dz}
+    \text{CAPE} = g \int_{LFC}^{EL} \frac{(\Theta_v_{parcel} - \Theta_v_{env})}{\Theta_v_{env}} d\text{dz}
+
+    .. math:: 
+    
     \\text{CIN} = g \\int_{SFC}^{LFC} \\frac{(\\Theta_v_{parcel} - \\Theta_v_{env})}{\\Theta_v_{env}} d\\text{dz}
     
     * :math:`CAPE` = Convective available potential energy 
@@ -151,8 +154,8 @@ def calc_cape(*args, **kwargs):
     * :math:`LFC` = Level of free convection
     * :math:`EL` = Equilibrium level
     * :math:`g` = Gravitational acceleration
-    * :math:`\\Theta_v_{parcel}` = Virtual potential temperature of the parcel
-    * :math:`\\Theta_v_{env}` = Virtual potential temperature of the environment
+    * :math:`\Theta_v_{parcel}` = Virtual potential temperature of the parcel
+    * :math:`\Theta_v_{env}` = Virtual potential temperature of the environment
     * :math:`z` = height above ground
 
     Parameters
