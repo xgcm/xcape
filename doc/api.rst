@@ -17,11 +17,8 @@ Top-level functions in Core Module
    xcape.core.calc_srh
   
   
-.. automodule:: xcape.core
-  :members:
-
-Xarray Module
-=============
-
-.. automodule:: xcape.xarray
-  :members:
+..
+    Xarray Module
+    =============
+    .. automodule:: xcape.xarray
+    :members:
