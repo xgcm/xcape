@@ -128,8 +128,8 @@ def calc_cape(*args, **kwargs):
     """
     Calculate Convective Available Potential Energy (CAPE) and Convective Inhibition (CIN).
     
-    Description:
-    ------------
+    Description
+    -----------
     Calculate the CAPE and CIN over a a 3D gridded field, by iterating over a point profile 
     integration of the area between an environmental vertical profile and a specified parcel profile.
     The integration is performed by a trapezoidal approach iteratively over a specified pressure
@@ -139,8 +139,8 @@ def calc_cape(*args, **kwargs):
     Vertical level options should be specified based on the input model data, whether defined on 
     pressure levels or model levels.
     
-    Formula:
-    --------
+    Formula
+    -------
     Calulates CAPE for a user specified set of parcel options based on the integration:
     .. math:: \text{CAPE} = g \int_{LFC}^{EL} \frac{(\Theta_v_{parcel} - \Theta_v_{env})}{  \
               \Theta_v_{env}} d\text{dz}
@@ -157,8 +157,8 @@ def calc_cape(*args, **kwargs):
     * :math:'\Theta_v_{env}' Virtual potential temperature of the environment
     * :math:'z' height above ground
 
-    Required Parameters:
-    -----------
+    Required Parameters
+    -------------------
     Six input arguments are required, followed by any user specified keyword arguments as follows:
     p : 'array-like'
         Atmospheric pressure at each vertical level in hPa.
@@ -175,14 +175,14 @@ def calc_cape(*args, **kwargs):
     tds : 'array-like'
         Surface dew point temperature in Celsius.
     
-    Default usage:
-    --------------
+    Default usage
+    -------------
     cape,cin = core.calc_cape(p, t, td, ps, ts, tds, source ='surface',
                   mldepth=500., adiabat='pseudo-liquid',pinc = 500., 
                   method='fortran', vertical_lev='sigma')
 
-    Optional Kwargs:
-    ---------
+    Optional Kwargs
+    ---------------
     The following options are user selected:
     source : {'surface', 'most-unstable', 'mixed-layer'}
         Select parcel based on desired assumptions under parcel theory. Surface-based parcels 
@@ -213,7 +213,7 @@ def calc_cape(*args, **kwargs):
         Most Unstable level location index (only returned for source: {'most-unstable'})
     zMUlev : 'array-like'
         height of MUlev (m) (only returned for source: {'most-unstable'}
-     """
+    """
 
     if len(args)<6:
         raise ValueError("Too little arguments.")     
@@ -355,6 +355,7 @@ def calc_srh(*args, **kwargs):
         'srh' = for only srh
         'all' = for srh, Bunkers' right-moving and left-moving storm component, 
                 mean not pressure averaged 6km wind
+
     Returns
     -------
     srh : array-like
