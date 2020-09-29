@@ -379,7 +379,9 @@ def calc_srh(*args, **kwargs):
         return _calc_srh_numpy(*args, **kwargs)
 
 def _calc_srh_gufunc(*args, **kwargs):
-
+    ''' Wrapped function for srh calculation for dask arrays to leverage parallelized calculation
+        over the grid.
+    '''
     
     if (kwargs['vertical_lev']=='sigma'):
         signature = "(i),(i),(i),(i),(i),(),(),(),(),()->(),()"
@@ -402,6 +404,10 @@ def _calc_srh_gufunc(*args, **kwargs):
 # the numpy version of the algorithm
 def _calc_srh_numpy(*args,
                     depth = 3000, vertical_lev='sigma',output_var='srh'):    
+    ''' 
+    Wrapper function for srh calculation to setup optional kwargs and ensure data is
+    is provided in a format suitable output to call SRH calculation. 
+    '''
     
     p, t, td, u, v,  ps, ts, tds, us, vs = args
     original_shape = t.shape #shape of 3D variable, i.e. p
