@@ -189,7 +189,7 @@ def calc_cape(*args, **kwargs):
     CAPE is calculated on a user specified set of parcel options based on the integration:
     
     
-    .. math:: CAPE = g \int_{LFC}^{EL} (\Theta_{v,parcel} - \Theta_{v,env}/(\Theta_{v,env}) d\\text{dz}
+    .. math:: CAPE = g \\int_{LFC}^{EL} (\Theta_{v,parcel} - \Theta_{v,env}/(\Theta_{v,env}) d\\text{dz}
 
     .. math:: CIN = g \\int_{SFC}^{LFC} (\Theta_{v,parcel} - \Theta_{v,env})/(\Theta_{v,env}) d\\text{dz}
     
@@ -360,6 +360,18 @@ def calc_srh(*args, **kwargs):
     Returns
     -------
     srh : array-like
+    
+    Notes
+    -----
+    SRH is calculated on a user specified set of parcel options based on the integration:
+    
+    .. math:: SRH = \\int_{0}^{h}(V-C)\\cdot \\omega dz  
+     
+    References
+    ----------
+    [1] fill references
+
+
     """
     if _any_dask_array(*args):
         return _calc_srh_gufunc(*args, **kwargs)
