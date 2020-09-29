@@ -369,7 +369,7 @@ def calc_srh(*args, **kwargs):
      
     References
     ----------
-    [1] fill references
+    .. [1] fill references
 
 
     """

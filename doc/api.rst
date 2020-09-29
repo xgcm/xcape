@@ -15,6 +15,7 @@ Top-level functions in Core Module
 
    xcape.core.calc_cape
    xcape.core.calc_srh
+   xcape.CAPE_CODE_model_lev
   
   
 ..
