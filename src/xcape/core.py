@@ -140,6 +140,7 @@ def calc_cape(*args, **kwargs):
     
     
     Calulates CAPE for a user specified set of parcel options based on the integration:
+    
     .. math:: CAPE = g \int_{LFC}^{EL} \frac{(\Theta_v_{parcel} - \Theta_v_{env})}{\Theta_v_{env}} d\text{dz}
 
     .. math:: \text{CAPE} = g \int_{LFC}^{EL} \frac{(\Theta_v_{parcel} - \Theta_v_{env})}{  \
@@ -150,18 +151,17 @@ def calc_cape(*args, **kwargs):
     .. math:: \text{CIN} = g \int_{SFC}^{LFC} \frac{(\Theta_v_{parcel} - \Theta_v_{env})}{  \
               \Theta_v_{env}} d\text{dz}
     
-    * :math:`CAPE` Convective available potential energy 
-    * :math:`CIN` Convective inhibition
-    * :math:`LFC` Level of free convection
-    * :math:`EL` Equilibrium level
-    * :math:`g` Gravitational acceleration
-    * :math:`\Theta_v_{parcel}` Virtual potential temperature of the parcel
-    * :math:`\Theta_v_{env}` Virtual potential temperature of the environment
-    * :math:`z` height above ground
+    * :math:`CAPE` = Convective available potential energy 
+    * :math:`CIN` = Convective inhibition
+    * :math:`LFC` = Level of free convection
+    * :math:`EL` = Equilibrium level
+    * :math:`g` = Gravitational acceleration
+    * :math:`\Theta_v_{parcel}` = Virtual potential temperature of the parcel
+    * :math:`\Theta_v_{env}` = Virtual potential temperature of the environment
+    * :math:`z` = height above ground
 
     Parameters
     ----------
-    Six input arguments are required, followed by any user specified keyword arguments as follows:
     p : 'array-like'
         Atmospheric pressure at each vertical level in hPa.
         When vertical_lev='model', p.shape = t.shape = (nlev, x, y, ...)
@@ -176,33 +176,23 @@ def calc_cape(*args, **kwargs):
         Surface Temperature in Celsius.
     tds : 'array-like'
         Surface dew point temperature in Celsius.
-
-    Default usage
-    -------------
-    >>> cape,cin = core.calc_cape(p, t, td, ps, ts, tds, source ='surface',
-                  mldepth=500., adiabat='pseudo-liquid',pinc = 500., 
-                  method='fortran', vertical_lev='sigma')
-
-    Optional Kwargs
-    ---------------
-    The following options are user selected:
-    source : {'surface', 'most-unstable', 'mixed-layer'}
+    source : {'surface', 'most-unstable', 'mixed-layer'}, optional (default is surface)
         Select parcel based on desired assumptions under parcel theory. Surface-based parcels 
         are subject to substantial errors depending on surface heating and source data, and 
         can be influenced by moisture depth. Mixed-layer parcels are generally a good assumption
         for profiles at peak heating when the boundary layer is deeply mixed to approximately the
         boundary layer depth. Most-unstable is defined by the layer below 500hPa with the highest 
         equivalent potential temperature. 
-    ml_depth : float, optional
+    ml_depth : float, optional (default is 500)
         Depth (m) of mixed layer. Only applies when the source='mixed-layer'
-    adiabat : {'pseudo-liquid', 'reversible-liquid','pseudo-ice', 'reversible-ice'}
-    pinc : float, optional
+    adiabat : {'pseudo-liquid', 'reversible-liquid','pseudo-ice', 'reversible-ice'}, optional (default is 'pseudo-liquid')
+    pinc : float, optional (default is 500)
         Pressure increment for integration (Pa) - Recommended usage (between 1000 and 100) is 
         based on desired speed, with accuracy of the calculation increasing with smaller 
         integration increments. 
-    method : {'fortran', 'numba'}
+    method : {'fortran', 'numba'}, optional (default is 'fortran')
         Option to select numerical approach using wrapped Fortran 90 or a Numba python variant.
-    vertical_lev : {'sigma', 'pressure'}
+    vertical_lev : {'sigma', 'pressure'}, optional (default is 'sigma')
         Option to select vertical grid, between model coordinates and pressure levels.
 
     Returns
@@ -215,6 +205,16 @@ def calc_cape(*args, **kwargs):
         Most Unstable level location index (only returned for source: {'most-unstable'})
     zMUlev : 'array-like'
         height of MUlev (m) (only returned for source: {'most-unstable'}
+        
+    Notes
+    -------------
+    
+    Example of usage:
+    
+    >>> cape, cin = core.calc_cape(p, t, td, ps, ts, tds, source ='mixed-layer',
+                    mldepth=500., adiabat='pseudo-liquid', pinc = 500., 
+                    method='fortran', vertical_lev='sigma')
+
     """
 
     if len(args)<6:
