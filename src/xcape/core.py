@@ -141,9 +141,10 @@ def calc_cape(*args, **kwargs):
     
     Calulates CAPE for a user specified set of parcel options based on the integration:
     
-    .. math:: \\text{CAPE} = g \\int_{LFC}^{EL} \\frac{ (\\Theta_v_{parcel} - \\Theta_v_{env})}{\\Theta_v_{env}} d\\text{dz}
-
-    .. math:: \\text{CIN} = g \\int_{SFC}^{LFC} \\frac{(\\Theta_v_{parcel} - \\Theta_v_{env})}{\\Theta_v_{env}} d\\text{dz}
+    .. math:: 
+    
+    \\text{CAPE} = g \\int_{LFC}^{EL} \\frac{(\\Theta_v_{parcel} - \\Theta_v_{env})}{\\Theta_v_{env}} d\\text{dz}
+    \\text{CIN} = g \\int_{SFC}^{LFC} \\frac{(\\Theta_v_{parcel} - \\Theta_v_{env})}{\\Theta_v_{env}} d\\text{dz}
     
     * :math:`CAPE` = Convective available potential energy 
     * :math:`CIN` = Convective inhibition
@@ -172,9 +173,9 @@ def calc_cape(*args, **kwargs):
         Surface dew point temperature in Celsius.
     source : str, optional, default is 'surface'
         Select parcel based on desired assumptions under parcel theory:
-        'surface' = Surface-based parcels are subject to substantial errors depending on surface heating and source data, and can be influenced by moisture depth. 
-        'mixed-layer' = Mixed-layer parcels are generally a good assumption for profiles at peak heating when the boundary layer is deeply mixed to approximately the boundary layer depth. 
-        'most-unstable' = Most-unstable is defined by the layer below 500hPa with the highest equivalent potential temperature.
+        - 'surface' = Surface-based parcels are subject to substantial errors depending on surface heating and source data, and can be influenced by moisture depth. 
+        - 'mixed-layer' = Mixed-layer parcels are generally a good assumption for profiles at peak heating when the boundary layer is deeply mixed to approximately the boundary layer depth. 
+        - 'most-unstable' = Most-unstable is defined by the layer below 500hPa with the highest equivalent potential temperature.
     ml_depth : float, optional (default is 500)
         Depth (m) of mixed layer. Only applies when the source='mixed-layer'
     adiabat : str, optional, default is 'pseudo-liquid'
@@ -324,6 +325,8 @@ def _calc_cape_numpy(*args,
 def calc_srh(*args, **kwargs):
     """
     Calculate storm relative helicity for a vectorized set of profiles over the first axis of the arrays.
+    
+    Add description here similarly to calc_cape
 
     Parameters
     ----------
@@ -335,7 +338,6 @@ def calc_srh(*args, **kwargs):
         Temperature in Celsius
     td : array-like
         Dew point temperature in Celsius
-        
     ps : array-like
         Surface Pressure in mb.
     ts : array-like
@@ -344,12 +346,11 @@ def calc_srh(*args, **kwargs):
         Surface Dew point temperature in Celsius
     depth : float, optional
         Depth (m) of SRH layer.
-    vertical_lev : {'sigma', 'pressure'}
-        Which vertical grid is used
-    output_var : {'srh', 'all'}
-        'srh' = for only srh
-        'all' = for srh, Bunkers' right-moving and left-moving storm component, 
-                mean not pressure averaged 6km wind
+    vertical_lev : str, optional, default is 'sigma'
+        Option to select vertical grid, between model coordinates, 'sigma', and pressure levels, 'pressure'.
+    output_var : str, optional, default is 'srh'
+        - 'srh' = for only srh
+        - 'all' = for srh, Bunkers' right-moving and left-moving storm component, mean not pressure averaged 6km wind
 
     Returns
     -------
