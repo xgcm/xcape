@@ -138,26 +138,7 @@ def calc_cape(*args, **kwargs):
     Vertical level options should be specified based on the input model data, whether defined on 
     pressure levels or model levels.
     
-    
-    Calulates CAPE for a user specified set of parcel options based on the integration:
-    
-    .. math:: 
-    
-    \text{CAPE} = g \int_{LFC}^{EL} \frac{(\Theta_v_{parcel} - \Theta_v_{env})}{\Theta_v_{env}} d\text{dz}
-
-    .. math:: 
-    
-    \\text{CIN} = g \\int_{SFC}^{LFC} \\frac{(\\Theta_v_{parcel} - \\Theta_v_{env})}{\\Theta_v_{env}} d\\text{dz}
-    
-    * :math:`CAPE` = Convective available potential energy 
-    * :math:`CIN` = Convective inhibition
-    * :math:`LFC` = Level of free convection
-    * :math:`EL` = Equilibrium level
-    * :math:`g` = Gravitational acceleration
-    * :math:`\Theta_v_{parcel}` = Virtual potential temperature of the parcel
-    * :math:`\Theta_v_{env}` = Virtual potential temperature of the environment
-    * :math:`z` = height above ground
-
+   
     Parameters
     ----------
     p : array-like
@@ -204,13 +185,38 @@ def calc_cape(*args, **kwargs):
         height of MUlev (m) (only returned for source: {'most-unstable'}
         
     Notes
-    -------------
+    -----
+    CAPE is calculated on a user specified set of parcel options based on the integration:
+    
+    .. math:: 
+    
+    \text{CAPE} = g \int_{LFC}^{EL} \frac{(\Theta_v_{parcel} - \Theta_v_{env})}{\Theta_v_{env}} d\text{dz}
+
+    .. math:: 
+    
+    \\text{CIN} = g \\int_{SFC}^{LFC} \\frac{(\\Theta_v_{parcel} - \\Theta_v_{env})}{\\Theta_v_{env}} d\\text{dz}
+    
+    * :math:`CAPE` = Convective available potential energy 
+    * :math:`CIN` = Convective inhibition
+    * :math:`LFC` = Level of free convection
+    * :math:`EL` = Equilibrium level
+    * :math:`g` = Gravitational acceleration
+    * :math:`\Theta_v_{parcel}` = Virtual potential temperature of the parcel
+    * :math:`\Theta_v_{env}` = Virtual potential temperature of the environment
+    * :math:`z` = height above ground    
+        
+    Examples
+    -------
     
     Example of usage:
     
     >>> cape, cin = core.calc_cape(p, t, td, ps, ts, tds, source ='mixed-layer',
                     mldepth=500., adiabat='pseudo-liquid', pinc = 500., 
                     method='fortran', vertical_lev='sigma')
+                    
+    References
+    ----------
+    
 
     """
 
