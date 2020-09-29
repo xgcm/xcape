@@ -188,13 +188,11 @@ def calc_cape(*args, **kwargs):
     -----
     CAPE is calculated on a user specified set of parcel options based on the integration:
     
-    .. math:: 
+    .. math:: \text{CAPE} = g \int_{LFC}^{EL} \frac{(\Theta_v_{parcel} - \Theta_v_{env})}{\Theta_v_{env}} d\text{dz}
     
-    \text{CAPE} = g \int_{LFC}^{EL} \frac{(\Theta_v_{parcel} - \Theta_v_{env})}{\Theta_v_{env}} d\text{dz}
+    .. math:: CAPE = g \int_{LFC}^{EL} (\Theta_{v,parcel} - \Theta_{v,env}/(\Theta_{v,env}) d\text{dz}
 
-    .. math:: 
-    
-    \\text{CIN} = g \\int_{SFC}^{LFC} \\frac{(\\Theta_v_{parcel} - \\Theta_v_{env})}{\\Theta_v_{env}} d\\text{dz}
+    .. math:: \\text{CIN} = g \\int_{SFC}^{LFC} \\frac{(\\Theta_v_{parcel} - \\Theta_v_{env})}{\\Theta_v_{env}} d\\text{dz}
     
     * :math:`CAPE` = Convective available potential energy 
     * :math:`CIN` = Convective inhibition
@@ -204,19 +202,18 @@ def calc_cape(*args, **kwargs):
     * :math:`\Theta_v_{parcel}` = Virtual potential temperature of the parcel
     * :math:`\Theta_v_{env}` = Virtual potential temperature of the environment
     * :math:`z` = height above ground    
-        
+  
     Examples
-    -------
-    
+    -------    
     Example of usage:
     
     >>> cape, cin = core.calc_cape(p, t, td, ps, ts, tds, source ='mixed-layer',
                     mldepth=500., adiabat='pseudo-liquid', pinc = 500., 
                     method='fortran', vertical_lev='sigma')
-                    
+   
     References
     ----------
-    
+    .. [1] prova
 
     """
 
