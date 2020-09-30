@@ -34,6 +34,8 @@ def p_t_td_surface(nx=10, ny=5):
 
 # surface mode returns cape, cin
 # most-unstable mode returns cape, cin, mulev, zmulev
+
+# TEST CHANGE IN SHAPE OF VARIABLES IN
 @pytest.mark.parametrize('use_dask', [False, True])
 @pytest.mark.parametrize('sourcein,n_returns',
                          [('surface', 2), ('most-unstable', 4)])
@@ -61,7 +63,8 @@ decimal_cape = 0
 decimal_cin = 0
 decimal_mulv = 0
 decimal_zmulv = 0
-
+# TEST FOR CAPE CALCULATION FOR MODEL LEVEL USING THE DATASET_SOUNDING DATA
+# THAT MIMIC THE MODEL LEVELS
 @pytest.mark.parametrize('use_dask', [False, True])
 @pytest.mark.parametrize('sourcein, pinc_used',
                          [('surface', 100),('mixed-layer',1000),('most-unstable', 100)])
@@ -112,6 +115,8 @@ def test_calc_cape_sigma(dataset_soundings, sourcein, pinc_used, use_dask,vertic
             np.testing.assert_almost_equal(cape, ds.ML_CAPE_pinc1000_mldepth500.values, decimal_cape)
             np.testing.assert_almost_equal(cin, ds.ML_CIN_pinc1000_mldepth500.values, decimal_cin)
 
+# TEST FOR CAPE CALCULATION FOR PRESSURE LEVEL USING THE DATASET_ERA5pressurelevel DATA
+# THAT ARE PRESSURE LEVEL DATA
 @pytest.mark.parametrize('use_dask', [False, True])
 @pytest.mark.parametrize('sourcein', ['surface', 'mixed-layer', 'most-unstable'])
 @pytest.mark.parametrize('vertical_levin', ['pressure'])
@@ -170,7 +175,7 @@ def test_calc_cape_pressure(dataset_ERA5pressurelevel, sourcein, pinc_used, ml_d
                          [('all', 8),('srh',1)])
 @pytest.mark.parametrize('vertical_levin', ['sigma'])
 def test_calc_srh_sigma(dataset_soundings, output_var_in, n_returns, use_dask, vertical_levin):
-    """Test SRH code"""
+    """Test SRH code sigma/model level"""
     ds = dataset_soundings
     if use_dask:
         ds = ds.chunk()
@@ -228,7 +233,7 @@ def test_calc_srh_sigma(dataset_soundings, output_var_in, n_returns, use_dask, v
                          [('all', 8),('srh',1)])
 @pytest.mark.parametrize('vertical_levin', ['pressure'])
 def test_calc_srh_pressure(dataset_ERA5pressurelevel, output_var_in, n_returns, use_dask, vertical_levin):
-    """Test SRH code"""
+    """Test SRH code pressure level"""
     ds3d, dssurf = dataset_ERA5pressurelevel
     if use_dask:
         ds3d = ds3d.chunk()

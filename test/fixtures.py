@@ -16,6 +16,15 @@ def empty_dask_array(shape, dtype=float, chunks=None):
 
     return a
 
+# This fixture is used in testing CAPE and SRH. In particular we followed this procedure:
+# we extracted a few profiles from ERA5 pressure level data and some sounding profiles
+# 1) we ran metPy on them and saved the SRH results - therefore we use np.testing.assert_almost_equal 
+# with 5 as possible difference, because we expect small differences
+# 2) we ran the George Bryan getCAPE.F code to get CAPE  - therefore we assert_almost_equal 
+# with 0 for the differences
+# We expect differences withing certain limits, defined in each test routine, 
+# especially for SRH where results can vary depending on some hypothesis 
+# (pressure averaged layers, or simple mean, and the definition of the reference storm speed.
 @pytest.fixture(scope='module')
 def dataset_ERA5pressurelevel():
     
