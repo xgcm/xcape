@@ -366,10 +366,25 @@ def calc_srh(*args, **kwargs):
     SRH is calculated on a user specified set of parcel options based on the integration:
     
     .. math:: SRH = \\int_{0}^{h}(V-C)\\cdot \\omega dz  
-     
+
+    * :math:`V` = ground relative wind vector
+    * :math:`C` = storm motion following Bunkers et al. (2000) [1]_
+    * :math:`\omega` = horizontal vorticity vector
+
+    Examples
+    -------    
+    Example of usage:
+    
+    >>> srh_rm, srh_lm = core.calc_srh(p, t, td, u, v, ps, ts, tds, us, vs,
+                                       depth=1000,
+                                       output_var='srh',
+                                       vertical_lev='sigma')   
+
     References
     ----------
-    .. [1] fill references
+    .. [1] Bunkers, M. J., B. A. Klimowski, J. W. Zeitler, R. L. Thompson, and M. L.
+       Weisman, 2000: Predicting supercell motion using a new hodograph technique. 
+       Wea. Forecasting, 15, 61-79. 
 
 
     """
