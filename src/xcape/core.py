@@ -157,8 +157,8 @@ def calc_cape(*args, **kwargs):
         Surface dew point temperature in Celsius.
     source : str, optional, default is 'surface'
         Select parcel based on desired assumptions under parcel theory:
-        - 'surface' = Surface-based parcels are subject to substantial errors depending on surface heating and source data, and can be influenced by moisture depth. 
-        - 'mixed-layer' = Mixed-layer parcels are generally a good assumption for profiles at peak heating when the boundary layer is deeply mixed to approximately the boundary layer depth. 
+        - 'surface' = Surface-based parcels are subject to substantial errors depending on surface heating and source data, and can be influenced by moisture depth.
+        - 'mixed-layer' = Mixed-layer parcels are generally a good assumption for profiles at peak heating when the boundary layer is deeply mixed to approximately the boundary layer depth.
         - 'most-unstable' = Most-unstable is defined by the layer below 500hPa with the highest equivalent potential temperature.
     ml_depth : float, optional (default is 500)
         Depth (m) of mixed layer. Only applies when the source='mixed-layer'
