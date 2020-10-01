@@ -396,15 +396,15 @@ def calc_srh(*args, **kwargs):
     
     Calculates SRH for a user specified depth based on the numeric integration:
     
-    .. math:: SRH = \int\limits_0^top (\bar v - c) \cdot \bar\omega_{h} \,dz    
+    .. math:: SRH = \int_{0}^{z} (\\bar v - c) \cdot \\bar \omega_{h} \,dz    
     
     * :math:`SRH` Storm Relative Helicity
-    * :math:`\bar v` Environmental Wind Vector
-    * :math:`\bar c` Storm Motion Vector (left and right components) following Bunkers et al. (2000) [1]_
-    * :math:`\bar\omega_{h}` Horizontal Vorticity Vector
+    * :math:`\\bar v` Environmental Wind Vector
+    * :math:`\\bar c` Storm Motion Vector (left and right components) following Bunkers et al. (2000) [1]_
+    * :math:`\\bar\omega_{h}` Horizontal Vorticity Vector
     * :math:`z` height above ground
  
-    For further details see Markowski and Richardson [2010], pages 230-231 _[2]
+    For further details see Markowski and Richardson [2010], pages 230-231 [2]_
     
 
     Examples
