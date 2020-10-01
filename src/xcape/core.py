@@ -395,7 +395,6 @@ def _calc_srh_numpy(*args,
     _calc_srh_gufunc.   
     '''
     
-    
     p, t, td, u, v,  ps, ts, tds, us, vs = args
     original_shape = t.shape #shape of 3D variable, i.e. p
     original_surface_shape = ts.shape #shape of surface variable, i.e. ps
