@@ -1,6 +1,6 @@
 #Copyright (c) 2020 xcape Developers.
 """
-Numpy API for xcape, for calculation of Convective Available Potential Energy (CAPE) 
+Numpy API for xcape, for calculation of Convective Available Potential Energy (CAPE)
 and Storm Relative Helicity (SRH).
 """
 
@@ -10,8 +10,15 @@ import dask.array as da
 from .duck_array_ops import (reshape, ravel_multi_index, concatenate,
                              broadcast_arrays)
 
-from .cape_fortran import cape as _cape_fortran
-from .cape_numba import cape as _cape_numba
+# put this statement within try so that i don't import need to import
+# and compile the modules when I build the docs
+try:
+    from .cape_fortran import cape as _cape_fortran
+except ImportError:
+    # allows us to import on readthedocs
+    cape = None
+    
+#from .cape_numba import cape as _cape_numba
 from .srh import srh as _srh
 from .stdheight import stdheight as _stdheight
 
@@ -121,8 +128,7 @@ def calc_cape(*args, **kwargs):
     """
     Calculate Convective Available Potential Energy (CAPE) and Convective Inhibition (CIN).
     
-    Description:
-    ------------
+    
     Calculate the CAPE and CIN over a a 3D gridded field, by iterating over a point profile 
     integration of the area between an environmental vertical profile and a specified parcel profile.
     The integration is performed by a trapezoidal approach iteratively over a specified pressure
@@ -132,91 +138,93 @@ def calc_cape(*args, **kwargs):
     Vertical level options should be specified based on the input model data, whether defined on 
     pressure levels or model levels.
     
-    Formula:
-    --------
-    Calulates CAPE for a user specified set of parcel options based on the integration:
-    .. math:: \text{CAPE} = g \int_{LFC}^{EL} \frac{(\Theta_v_{parcel} - \Theta_v_{env})}{  \
-              \Theta_v_{env}} d\text{dz}
-
-    .. math:: \text{CIN} = g \int_{SFC}^{LFC} \frac{(\Theta_v_{parcel} - \Theta_v_{env})}{  \
-              \Theta_v_{env}} d\text{dz}
-    
-    * :math:'CAPE' Convective available potential energy 
-    * :math:'CIN' Convective inhibition
-    * :math:'LFC' Level of free convection
-    * :math:'EL' Equilibrium level
-    * :math:'g' Gravitational acceleration
-    * :math:'\Theta_v_{parcel}' Virtual potential temperature of the parcel
-    * :math:'\Theta_v_{env}' Virtual potential temperature of the environment
-    * :math:'z' height above ground
-
-    Required Parameters:
-    -----------
-    Six input arguments are required, followed by any user specified keyword arguments as follows:
-    p : 'array-like'
+   
+    Parameters
+    ----------
+    p : array-like
         Atmospheric pressure at each vertical level in hPa.
         When vertical_lev='model', p.shape = t.shape = (nlev, x, y, ...)
         When vertical_lev='pressure', p.shape = t.shape[0] = (nlev)
-    t : 'array-like'
+    t : array-like
         Atmospheric temperature in Celsius. Vertical shape should be identical to pressure. 
-    td : 'array-like'
+    td : array-like
         Atmospheric dew point temperature in Celsius. Vertical shape should be identical to pressure.
-    ps : 'array-like'
+    ps : array-like
         Surface Pressure in hPa.
-    ts : 'array-like'
+    ts : array-like
         Surface Temperature in Celsius.
-    tds : 'array-like'
+    tds : array-like
         Surface dew point temperature in Celsius.
-    
-    Default usage:
-    --------------
-    cape,cin = core.calc_cape(p, t, td, ps, ts, tds, source ='surface',
-                  mldepth=500., adiabat='pseudo-liquid',pinc = 500., 
-                  method='fortran', vertical_lev='sigma')
-
-    Optional Kwargs:
-    ---------
-    The following options are user selected:
-    source : {'surface', 'most-unstable', 'mixed-layer'}
-        Select parcel based on desired assumptions under parcel theory. Surface-based parcels 
-        are subject to substantial errors depending on surface heating and source data, and 
-        can be influenced by moisture depth. Mixed-layer parcels are generally a good assumption
-        for profiles at peak heating when the boundary layer is deeply mixed to approximately the
-        boundary layer depth. Most-unstable is defined by the layer below 500hPa with the highest 
-        equivalent potential temperature. 
-    ml_depth : float, optional
+    source : str, optional, default is 'surface'
+        Select parcel based on desired assumptions under parcel theory
+            - 'surface' = Surface-based parcels are subject to substantial errors depending on surface heating and source data, and can be influenced by moisture depth.
+            - 'mixed-layer' = Mixed-layer parcels are generally a good assumption for profiles at peak heating when the boundary layer is deeply mixed to approximately the boundary layer depth.
+            - 'most-unstable' = Most-unstable is defined by the layer below 500hPa with the highest equivalent potential temperature.
+    ml_depth : float, optional (default is 500)
         Depth (m) of mixed layer. Only applies when the source='mixed-layer'
-    adiabat : {'pseudo-liquid', 'reversible-liquid','pseudo-ice', 'reversible-ice'}
-    pinc : float, optional
+    adiabat : str, optional, default is 'pseudo-liquid'
+        options include: 'pseudo-liquid', 'reversible-liquid','pseudo-ice', 'reversible-ice'  
+    pinc : float, optional, default is 500
         Pressure increment for integration (Pa) - Recommended usage (between 1000 and 100) is 
         based on desired speed, with accuracy of the calculation increasing with smaller 
         integration increments. 
-    method : {'fortran', 'numba'}
-        Option to select numerical approach using wrapped Fortran 90 or a Numba python variant.
-    vertical_lev : {'sigma', 'pressure'}
-        Option to select vertical grid, between model coordinates and pressure levels.
+    method : str, optional, default is 'fortran'
+        Option to select numerical approach using wrapped Fortran 90 or a Numba python variant (to be implemented)
+    vertical_lev : str, optional, default is 'sigma'
+        Option to select vertical grid, between model coordinates, 'sigma', and pressure levels, 'pressure'.
 
     Returns
     -------
-    cape : 'array-like'
+    cape : array-like
         Convective available potential energy (J/Kg)
-    cin : 'array-like'
+    cin : array-like
         Convective inhibition (J/Kg)
-    MUlev : 'array-like'
+    MUlev : array-like
         Most Unstable level location index (only returned for source: {'most-unstable'})
-    zMUlev : 'array-like'
+    zMUlev : array-like
         height of MUlev (m) (only returned for source: {'most-unstable'}
-     """
+        
+    Notes
+    -----
+    CAPE is calculated on a user specified set of parcel options based on the integration  [1]_:
+    
+    
+    .. math:: CAPE = g \\int_{LFC}^{EL} (T_{v,parcel} - T_{v,env}/(T_{v,env}) \\text{dz}
+
+    .. math:: CIN = g \\int_{SFC}^{LFC} (T_{v,parcel} - T_{v,env})/(T_{v,env}) \\text{dz}
+    
+    * :math:`CAPE` = Convective available potential energy 
+    * :math:`CIN` = Convective inhibition
+    * :math:`LFC` = Level of free convection
+    * :math:`EL` = Equilibrium level
+    * :math:`g` = Gravitational acceleration
+    * :math:`T_{v,parcel}` = Virtual potential temperature of the parcel
+    * :math:`T_{v,env}` = Virtual potential temperature of the environment
+    * :math:`z` = height above ground    
+  
+    Examples
+    -------    
+    Example of usage:
+    
+    >>> cape, cin = core.calc_cape(p, t, td, ps, ts, tds, source ='mixed-layer',
+                    mldepth=500., adiabat='pseudo-liquid', pinc = 500., 
+                    method='fortran', vertical_lev='sigma')
+   
+    References
+    ----------
+    .. [1] Emanuel, K. A. (1994). Atmospheric convection. Oxford University Press on Demand.
+
+    """
 
     if len(args)<6:
-        raise ValueError("Too little arguments.")     
+        raise ValueError("Too few arguments.")     
         
     if len(args)>6:
         raise ValueError("Too many arguments.")     
         
     allowed_vertical_levs = ['sigma', 'pressure']
     if kwargs['vertical_lev'] not in allowed_vertical_levs:
-        raise ValueError(f"`vertrical_lev` must be one of: {allowed_vertical_levs}")
+        raise ValueError(f"`vertical_lev` must be one of: {allowed_vertical_levs}")
         
     if _any_dask_array(*args):
         return _calc_cape_gufunc(*args, **kwargs)
@@ -322,35 +330,111 @@ def _calc_cape_numpy(*args,
 def calc_srh(*args, **kwargs):
     """
     Calculate storm relative helicity for a vectorized set of profiles over the first axis of the arrays.
+    
+    Calculate SRH over a predefined depth for a N-dimensional gridded field. 
+    Performs a point profile integration of the area between the hodograph and      
+    the vectors between the estimated storm motion vector at the bottom and top     
+    layer. The calculation assumes that the storm motion is described by the
+    un-weighted mean 0-6 km wind vector subsampled at 500m intervals, with a 
+    left or right moving storm deviating by 7.5 m/s perpendicular to this 
+    mean wind, following the empirically estimated approach defined by 
+    Bunkers et al. (2000). Output can be specified to include the assumed 
+    motion, or to return only the helicity as calculated for the user-defined 
+    layer. Vertical level option should be specified based on the input model 
+    data, whether defined on pressure or model levels.    
 
     Parameters
     ----------
     p : array-like
-        Pressure in mb.
-        When vertical_lev='model', p.shape = t.shape = (nlev, x, y, ...)
-        When vertical_lev='pressure', p.shape = t.shape[0] = (nlev)
+        Atmospheric pressure in hPa.
+        - When vertical_lev='model', p.shape = t.shape = (nlev, x, y, ...)
+        - When vertical_lev='pressure', p.shape = t.shape[0] = (nlev)
     t : array-like
-        Temperature in Celsius
+        Atmospheric temperature in Celsius. Vertical shape should be identical to pressure. 
     td : array-like
-        Dew point temperature in Celsius
-        
+        Atmospheric dew point temperature in Celsius. Vertical shape should be identical to pressure. 
+    u  : array-like
+        Zonal wind component in meters per second. Vertical shape should be identical to pressure. 
+    v  : array-like
+        Meridional wind component in meters per second. Vertical shape should be identical to pressure.    
     ps : array-like
-        Surface Pressure in mb.
+        Surface Pressure in hPa.
     ts : array-like
-        Surface Temperature in Celsius
+        Surface Temperature in Celsius.
     tds : array-like
-        Surface Dew point temperature in Celsius
+        Surface dew point temperature in Celsius.
+    us : array-like
+        10m zonal wind field in meters per second. 
+    us : array-like
+        10m meridional wind field in meters per second. 
     depth : float, optional
-        Depth (m) of SRH layer.
-    vertical_lev : {'sigma', 'pressure'}
-        Which vertical grid is used
-    output_var : {'srh', 'all'}
-        'srh' = for only srh
-        'all' = for srh, Bunkers' right-moving and left-moving storm component, 
-                mean not pressure averaged 6km wind
+        Depth in meters (m) of the layer to calculate SRH.
+    vertical_lev : str, optional, default is 'sigma'
+        Option to select vertical grid, between model coordinates, 'sigma', and pressure levels, 'pressure'.
+    output_var : str, optional, default is 'srh'
+        - 'srh' = for only srh
+        - 'all' = for srh, Bunkers' right-moving and left-moving storm component, mean not pressure averaged 6km wind
+        Option to return either calculated SRH only, or also the Bunker's storm
+        motion for the right-moving and left-moving storms, along with the not
+        pressure-weighted mean 0-6 km wind.
+
     Returns
     -------
-    srh : array-like
+    srh_rm : array-like
+          Storm relative helicity for the right-moving storm.
+    srh_lm : array-like
+          Storm relative helicity for the left-moving storm.
+    bunkers_rm_u: array-like
+          Estimated storm motion for the right-moving storm, u component.
+    bunkers_rm_v: array-like
+          Estimated storm motion for the right-moving storm, v component.
+    bunkers_lm_u: array-like
+          Estimated storm motion for the left-moving storm, u component.
+    bunkers_lm_v: array-like
+          Estimated storm motion for the left-moving storm, v component.
+    mean_6km_u: array-like
+          Mean wind between 0 and 6km without pressure weighting, u component.
+    mean_6km_v: array-like
+          Mean wind between 0 and 6km without pressure weighting, v component.
+    
+    Notes
+    -----
+    
+    Calculates SRH for a user specified depth based on the numeric integration:
+    
+    .. math:: SRH = \int_{0}^{h} (\\bar v - c) \cdot \\bar \omega_{h} \,dz    
+    
+    * :math:`SRH` Storm Relative Helicity
+    * :math:`\\bar v` Environmental Wind Vector
+    * :math:`\\bar c` Storm Motion Vector (left and right components) following Bunkers et al. (2000) [1]_
+    * :math:`\\bar\omega_{h}` Horizontal Vorticity Vector
+    * :math:`z` height above ground
+ 
+    For further details see Markowski and Richardson [2010], pages 230-231 [2]_
+    
+
+    Examples
+    -------    
+    Example of usage:
+    
+    >>> srh_rm, srh_lm = core.calc_srh(p, t, td, u, v, ps, ts, tds, us, vs,
+                                       depth=1000,
+                                       output_var='srh',
+                                       vertical_lev='sigma')   
+                                       
+    >>> srh_rm, srh_lm, rm_u, rm_v, lm_u, lm_v, mean_6km_u, mean_6km_v = core.calc_srh(
+                                       p, t, td, u, v, ps, ts, tds, us, vs,
+                                       depth=1000,
+                                       output_var='srh',
+                                       vertical_lev='sigma')   
+
+    References
+    ----------
+    .. [1] Bunkers, M. J., B. A. Klimowski, J. W. Zeitler, R. L. Thompson, and M. L.
+       Weisman, 2000: Predicting supercell motion using a new hodograph technique. 
+       Wea. Forecasting, 15, 61-79. 
+    .. [2] Markowski, P., & Richardson, Y. (2011). Mesoscale meteorology in midlatitudes (Vol. 2). John Wiley & Sons.
+
     """
     if _any_dask_array(*args):
         return _calc_srh_gufunc(*args, **kwargs)
@@ -358,7 +442,9 @@ def calc_srh(*args, **kwargs):
         return _calc_srh_numpy(*args, **kwargs)
 
 def _calc_srh_gufunc(*args, **kwargs):
-
+    ''' Wrapped function for srh calculation for dask arrays to leverage parallelized calculation
+        over the grid.
+    '''
     
     if (kwargs['vertical_lev']=='sigma'):
         signature = "(i),(i),(i),(i),(i),(),(),(),(),()->(),()"
@@ -381,6 +467,14 @@ def _calc_srh_gufunc(*args, **kwargs):
 # the numpy version of the algorithm
 def _calc_srh_numpy(*args,
                     depth = 3000, vertical_lev='sigma',output_var='srh'):    
+    ''' 
+    Wrapper function for SRH calculation to setup optional kwargs and 
+    ensure data is provided in a format suitable output to call the 
+    Fortran implementation of SRH calculation. Also calculates standard
+    height using the hypsometric equation, which necessitates the passing
+    of pressure, temperature and dewpoint temperature. Called by 
+    _calc_srh_gufunc.   
+    '''
     
     p, t, td, u, v,  ps, ts, tds, us, vs = args
     original_shape = t.shape #shape of 3D variable, i.e. p
@@ -409,7 +503,8 @@ def _calc_srh_numpy(*args,
     _output_var_options = {'srh':1, 'all':2}        
 
     kwargs_stdh = dict(type_grid=_vertical_lev_options_[vertical_lev])
-
+    
+    # calculates standard height using the hypsometric equation
     aglh_2d, aglh_s1d = _stdheight(p_2d, t_2d, td_2d,
                                    p_s1d, t_s1d, td_s1d,
                                    flag_1d,
