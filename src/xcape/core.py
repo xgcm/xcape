@@ -168,7 +168,7 @@ def calc_cape(*args, **kwargs):
         Pressure increment for integration (Pa) - Recommended usage (between 1000 and 100) is 
         based on desired speed, with accuracy of the calculation increasing with smaller 
         integration increments. 
-    method : str, optional, default is 'fortran')
+    method : str, optional, default is 'fortran'
         Option to select numerical approach using wrapped Fortran 90 or a Numba python variant (to be implemented)
     vertical_lev : str, optional, default is 'sigma'
         Option to select vertical grid, between model coordinates, 'sigma', and pressure levels, 'pressure'.
@@ -186,20 +186,20 @@ def calc_cape(*args, **kwargs):
         
     Notes
     -----
-    CAPE is calculated on a user specified set of parcel options based on the integration:
+    CAPE is calculated on a user specified set of parcel options based on the integration  [1]_:
     
     
-    .. math:: CAPE = g \\int_{LFC}^{EL} (\Theta_{v,parcel} - \Theta_{v,env}/(\Theta_{v,env}) d\\text{dz}
+    .. math:: CAPE = g \\int_{LFC}^{EL} (T_{v,parcel} - T_{v,env}/(T_{v,env}) \\text{dz}
 
-    .. math:: CIN = g \\int_{SFC}^{LFC} (\Theta_{v,parcel} - \Theta_{v,env})/(\Theta_{v,env}) d\\text{dz}
+    .. math:: CIN = g \\int_{SFC}^{LFC} (T_{v,parcel} - T_{v,env})/(T_{v,env}) \\text{dz}
     
     * :math:`CAPE` = Convective available potential energy 
     * :math:`CIN` = Convective inhibition
     * :math:`LFC` = Level of free convection
     * :math:`EL` = Equilibrium level
     * :math:`g` = Gravitational acceleration
-    * :math:`\Theta_{v,parcel}` = Virtual potential temperature of the parcel
-    * :math:`\Theta_{v,env}` = Virtual potential temperature of the environment
+    * :math:`T_{v,parcel}` = Virtual potential temperature of the parcel
+    * :math:`T_{v,env}` = Virtual potential temperature of the environment
     * :math:`z` = height above ground    
   
     Examples
@@ -212,19 +212,19 @@ def calc_cape(*args, **kwargs):
    
     References
     ----------
-    .. [1] prova
+    .. [1] Emanuel, K. A. (1994). Atmospheric convection. Oxford University Press on Demand.
 
     """
 
     if len(args)<6:
-        raise ValueError("Too little arguments.")     
+        raise ValueError("Too few arguments.")     
         
     if len(args)>6:
         raise ValueError("Too many arguments.")     
         
     allowed_vertical_levs = ['sigma', 'pressure']
     if kwargs['vertical_lev'] not in allowed_vertical_levs:
-        raise ValueError(f"`vertrical_lev` must be one of: {allowed_vertical_levs}")
+        raise ValueError(f"`vertical_lev` must be one of: {allowed_vertical_levs}")
         
     if _any_dask_array(*args):
         return _calc_cape_gufunc(*args, **kwargs)
