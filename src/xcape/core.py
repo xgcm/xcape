@@ -384,12 +384,18 @@ def calc_srh(*args, **kwargs):
           Storm relative helicity for the right-moving storm.
     srh_lm : array-like
           Storm relative helicity for the left-moving storm.
-    bunkers_rm: array-like
-          Estimated storm motion for the right-moving storm.
-    bunkers_rm: array-like'
-          Estimated storm motion for the left-moving storm.
-    bunkers_rm: 'array-like'
-          Mean wind between 0 and 6km without pressure weighting.
+    bunkers_rm_u: array-like
+          Estimated storm motion for the right-moving storm, u component.
+    bunkers_rm_v: array-like
+          Estimated storm motion for the right-moving storm, v component.
+    bunkers_lm_u: array-like
+          Estimated storm motion for the left-moving storm, u component.
+    bunkers_lm_v: array-like
+          Estimated storm motion for the left-moving storm, v component.
+    mean_6km_u: array-like
+          Mean wind between 0 and 6km without pressure weighting, u component.
+    mean_6km_v: array-like
+          Mean wind between 0 and 6km without pressure weighting, v component.
     
     Notes
     -----
