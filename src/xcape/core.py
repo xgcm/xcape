@@ -387,8 +387,12 @@ def _calc_srh_gufunc(*args, **kwargs):
 def _calc_srh_numpy(*args,
                     depth = 3000, vertical_lev='sigma',output_var='srh'):    
     ''' 
-    Wrapper function for srh calculation to setup optional kwargs and ensure data
-    is provided in a format suitable output to call SRH calculation. 
+    Wrapper function for SRH calculation to setup optional kwargs and 
+    ensure data is provided in a format suitable output to call the 
+    Fortran implementation of SRH calculation. Also calculates standard
+    height using the hypsometric equation, which necessitates the passing
+    of pressure, temperature and dewpoint temperature. Called by 
+    _calc_srh_gufunc.   
     '''
     
     p, t, td, u, v,  ps, ts, tds, us, vs = args
