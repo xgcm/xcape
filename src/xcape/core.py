@@ -331,45 +331,81 @@ def calc_srh(*args, **kwargs):
     """
     Calculate storm relative helicity for a vectorized set of profiles over the first axis of the arrays.
     
-    Add description here similarly to calc_cape
+    Calculate SRH over a predefined depth for a N-dimensional gridded field. 
+    Performs a point profile integration of the area between the hodograph and      
+    the vectors between the estimated storm motion vector at the bottom and top     
+    layer. The calculation assumes that the storm motion is described by the
+    un-weighted mean 0-6 km wind vector subsampled at 500m intervals, with a 
+    left or right moving storm deviating by 7.5 m/s perpendicular to this 
+    mean wind, following the empirically estimated approach defined by 
+    Bunkers et al. (2000). Output can be specified to include the assumed 
+    motion, or to return only the helicity as calculated for the user-defined 
+    layer. Vertical level option should be specified based on the input model 
+    data, whether defined on pressure or model levels.    
 
     Parameters
     ----------
     p : array-like
-        Pressure in mb.
-        When vertical_lev='model', p.shape = t.shape = (nlev, x, y, ...)
-        When vertical_lev='pressure', p.shape = t.shape[0] = (nlev)
+        Atmospheric pressure in hPa.
+        - When vertical_lev='model', p.shape = t.shape = (nlev, x, y, ...)
+        - When vertical_lev='pressure', p.shape = t.shape[0] = (nlev)
     t : array-like
-        Temperature in Celsius
+        Atmospheric temperature in Celsius. Vertical shape should be identical to pressure. 
     td : array-like
-        Dew point temperature in Celsius
+        Atmospheric dew point temperature in Celsius. Vertical shape should be identical to pressure. 
+    u  : array-like
+        Zonal wind component in meters per second. Vertical shape should be identical to pressure. 
+    v  : array-like
+        Meridional wind component in meters per second. Vertical shape should be identical to pressure.    
     ps : array-like
-        Surface Pressure in mb.
+        Surface Pressure in hPa.
     ts : array-like
-        Surface Temperature in Celsius
+        Surface Temperature in Celsius.
     tds : array-like
-        Surface Dew point temperature in Celsius
+        Surface dew point temperature in Celsius.
+    us : array-like
+        10m zonal wind field in meters per second. 
+    us : array-like
+        10m meridional wind field in meters per second. 
     depth : float, optional
-        Depth (m) of SRH layer.
+        Depth in meters (m) of the layer to calculate SRH.
     vertical_lev : str, optional, default is 'sigma'
         Option to select vertical grid, between model coordinates, 'sigma', and pressure levels, 'pressure'.
     output_var : str, optional, default is 'srh'
         - 'srh' = for only srh
         - 'all' = for srh, Bunkers' right-moving and left-moving storm component, mean not pressure averaged 6km wind
+        Option to return either calculated SRH only, or also the Bunker's storm
+        motion for the right-moving and left-moving storms, along with the not
+        pressure-weighted mean 0-6 km wind.
 
     Returns
     -------
-    srh : array-like
+    srh_rm : array-like
+          Storm relative helicity for the right-moving storm.
+    srh_lm : array-like
+          Storm relative helicity for the left-moving storm.
+    bunkers_rm: array-like
+          Estimated storm motion for the right-moving storm.
+    bunkers_rm: array-like'
+          Estimated storm motion for the left-moving storm.
+    bunkers_rm: 'array-like'
+          Mean wind between 0 and 6km without pressure weighting.
     
     Notes
     -----
-    SRH is calculated on a user specified set of parcel options based on the integration:
     
-    .. math:: SRH = \\int_{0}^{h}(V-C)\\cdot \\omega dz  
-
-    * :math:`V` = ground relative wind vector
-    * :math:`C` = storm motion following Bunkers et al. (2000) [1]_
-    * :math:`\omega` = horizontal vorticity vector
+    Calculates SRH for a user specified depth based on the numeric integration:
+    
+    .. math:: SRH = \int\limits_0^top (\bar v - c) \cdot \bar\omega_{h} \,dz    
+    
+    * :math:`SRH` Storm Relative Helicity
+    * :math:`\bar v` Environmental Wind Vector
+    * :math:`\bar c` Storm Motion Vector (left and right components) following Bunkers et al. (2000) [1]_
+    * :math:`\bar\omega_{h}` Horizontal Vorticity Vector
+    * :math:`z` height above ground
+ 
+    For further details see Markowski and Richardson [2010], pages 230-231 _[2]
+    
 
     Examples
     -------    
@@ -379,13 +415,19 @@ def calc_srh(*args, **kwargs):
                                        depth=1000,
                                        output_var='srh',
                                        vertical_lev='sigma')   
+                                       
+    >>> srh_rm, srh_lm, rm_u, rm_v, lm_u, lm_v, mean_6km_u, mean_6km_v = core.calc_srh(
+                                       p, t, td, u, v, ps, ts, tds, us, vs,
+                                       depth=1000,
+                                       output_var='srh',
+                                       vertical_lev='sigma')   
 
     References
     ----------
     .. [1] Bunkers, M. J., B. A. Klimowski, J. W. Zeitler, R. L. Thompson, and M. L.
        Weisman, 2000: Predicting supercell motion using a new hodograph technique. 
        Wea. Forecasting, 15, 61-79. 
-
+    .. [2] Markowski, P., & Richardson, Y. (2011). Mesoscale meteorology in midlatitudes (Vol. 2). John Wiley & Sons.
 
     """
     if _any_dask_array(*args):
