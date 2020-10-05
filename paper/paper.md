@@ -23,10 +23,7 @@ bibliography: paper.bib
 
 ---
 
-# Summary
-
-
-# Statement of need 
+# Summary and Statement of need 
 
 `xcape` is an open-source Python package for the calculation of parameters 
 commonly used in meteorology: Convective Available Potential Energy (CAPE) and 
