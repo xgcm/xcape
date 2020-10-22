@@ -1,8 +1,20 @@
-!FILE: STDHEIGHT.F
 !-----------------------------------------------------------------------
 !ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
 !-----------------------------------------------------------------------
       SUBROUTINE loop_stdheight_ml(P,T,Td,Ps,Ts,Tds,Hin,NK,NX,H,Hs)
+
+!-----------------------------------------------------------------------
+!  loop_stdheight_ml - loop along the n2 dimension to calculate
+!                      geopotential heights throughout the atmosphere.
+!  
+!  Author(s): Chiara Lepore @chiaral, John Allen @xebadir
+!  
+!  Disclaimer: This code is made available WITHOUT WARRANTY. 
+!-----------------------------------------------------------------------
+!  NK -  number of model levels
+!  NX -  number of grid points for which to calculate the height profile.
+!-----------------------------------------------------------------------
+
       !f2py threadsafe
       !f2py intent(out) :: H
       IMPLICIT NONE
@@ -21,15 +33,43 @@
       return
       end subroutine loop_stdheight_ml
 
-
-!*********************************************************
-!Fast FORTRAN subroutine to calculate
-!Geopotential Height of an Isothermic layer,
-!using the ISA by vertically integrating the
-!hydrostatic balance equation with the density expressed
-!through the perfect gas law.
-!Written by John T. Allen July 2015, Last Updated Jan 2016
-!*********************************************************
+!-----------------------------------------------------------------------
+!  stdheight_ml - a fortran90 subroutine to calculate the geopotential
+!                 height profile from a point sounding. Iterating over
+!                 the vertical profile, it assumes isothermic mean
+!                 layers, calculates geopotential height difference 
+!                 between these layers by vertically integrating the 
+!                 hydrostatic balance equation with density expressed
+!                 through the perfect gas law. 
+!                  
+!  Last Modified: 5 October 2020
+!
+!  Author(s): Chiara Lepore @chiaral, John Allen @xebadir
+!  
+!  Disclaimer: This code is made available WITHOUT WARRANTY.
+!  
+!  References: Bolton(1980, MWR). 
+!              Vaisala (2015). Equations for the calculation of dewpoint
+!              temperature from specific humidity. Accessed at:
+!              http://www.vaisala.com/Vaisala%20Documents/Application
+!              %20notes/Humidity_Conversion_Formulas_B210973EN-F.pdf
+!              Holton, J. R., & Hakim, G. J. (2013). An introduction to
+!              dynamic meteorology. Waltham, MA.
+!-----------------------------------------------------------------------
+!  
+!  Input: NK  - number of model levels in the sounding.
+!         P   - one-dimensional array of pressure (hPa).
+!         T   - one-dimensional array of temperature (K).
+!         Td  - one-dimensional array of dewpoint temperature (K).
+!         Ps  - double precision value of surface pressure (hPa).
+!         Ts  - double precision value of surface temperature (K).
+!         Tds - double precision value of surface dewpoint (K).
+!         Hin - double precision values, height above ground of lowest
+!               (surface) layer in m. 
+!  
+!  Output: H  - one-dimensional array of height above ground (m).
+!          Hs - double precision value of surface height (m). 
+!-----------------------------------------------------------------------
 
       SUBROUTINE stdheight_ml(P,T,Td,Ps,Ts,Tds,Hin,NK,H,Hs)
       !f2py threadsafe
@@ -118,4 +158,7 @@
 
       RETURN
       END SUBROUTINE stdheight_ml
-      !END OF FILE STDHEIGHT.F
+
+!-----------------------------------------------------------------------
+!ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+!-----------------------------------------------------------------------
