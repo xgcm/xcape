@@ -20,8 +20,8 @@ def cape(p_2d, t_2d, td_2d, p_s, t_s, td_s, flag_1d, pres_lev_pos, source, ml_de
 #                                                               pinc, source, ml_depth, adiabat,
 #                                                               pres_lev_pos,
 #                                                               nlev, ngrid)
-        elif flag_1d == 1:
-            CAPE, CIN, MUlev, zMUlev = CAPE_CODE_pressure_lev.loopcape_pl1d(t_2d, td_2d, p_2d,
+#         elif flag_1d == 1:
+        CAPE, CIN, MUlev, zMUlev = CAPE_CODE_pressure_lev.loopcape_pl1d(t_2d, td_2d, p_2d,
                                                               p_s, t_s, td_s,
                                                               pinc, source, ml_depth, adiabat,
                                                               pres_lev_pos,
