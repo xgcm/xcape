@@ -23,7 +23,7 @@ bibliography: paper.bib
 
 ---
 
-# Summary and Statement of need 
+# Summary
 
 
 Atmospheric scientists rely on profiles of the atmosphere from observations and modeled snapshots to assess the potential for thunderstorms and other hazards. Model (those data produced to forecast into the future) and reanalysis (fixed snapshots of the historical atmosphere) output parameters are rarely consistent between different datasets, outside of the standard parameters such as temperature (T), specific humidity (Q), pressure (P), and vector winds (U,V). These data are typically available on at least a four-dimensional grid of time, vertical level, and spatial grid, and in some applications can also involve multiple realizations, necessitating calculations in an n-dimensional framework. This leads to a significant challenge when working with these data to evaluate parameters that describe vertical profiles, compare parameters between datasets, or even calculate these parameters for a single dataset. In the field of severe convective storms, this issue arises often as a result of many of the quantities being calculated by integration, and therefore requiring significant computational resources, and requiring application of approaches that can take as long as a second per profile to calculate (Allen 2018). This has served to hamper development and intercomparison of model forecasts and historical reanalysis profiles. The high cost of calculations has also served to exclude users, a problem that has only increased in response to exponential growth in model and reanalysis dataset size. This necessitates an approach to calculate desired parameters that is a) applicable to any n-dimensional model or reanalysis dataset and b) scalable and efficient in its calculations to allow users to perform these calculations from personal machines through high-performance computing centers.  To address this challenge we have developed `xcape`, an open-source Python package for the calculation of two numerically intensive parameters commonly used in convective storms meteorology as well as other fields: Convective Available Potential Energy (CAPE) and Storm Relative Helicity (SRH). 
@@ -60,11 +60,6 @@ model data. By wrapping low-level language routines (Fortran) for speed, and `da
 Current alternative to `xcape`, such as metpy and sharpy, . (if we say that our is much faster we have to include an example to test it)
 
 Given the significant resources that are usually necessary to calculate CAPE and SRH, `xcape` ability to calculate them in a fast and scalable way, this package will be of interest to the global convective storm and tropical meteorology communities, by forecasters, researcher, and students as well.
-
-
-
-
-# Citations
 
 
 # Acknowledgements
