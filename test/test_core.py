@@ -123,7 +123,7 @@ def test_calc_cape_pressure(dataset_ERA5pressurelevel, sourcein, pinc_used, ml_d
     if use_dask:
         ds3d = ds3d.chunk()
         dssurf = dssurf.chunk()
-    returns = calc_cape(ds3d.level.data,
+    returns = calc_cape(ds3d.p.data,
                           ds3d.t.data,
                           ds3d.td.data,
                           dssurf.p.data,
