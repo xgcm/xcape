@@ -21,8 +21,8 @@ def srh(u_2d, v_2d, aglh_2d, u_s, v_s, aglh_s, pres_lev_pos, depth, type_grid, o
                     (ngrid).
      aglh_s:        'array-like'
                     Height of the surface level above ground level in m (ngrid)
-     press_lev_pos: '?'
-                    Need to Add
+     press_lev_pos: 'Integer'
+                    For type_grid='pressure' indicates the levels where p_2d <= p_s1d
      depth:         'Integer'
                     Depth for SRH integration to be performed in m. 
      type_grid:     'Integer'

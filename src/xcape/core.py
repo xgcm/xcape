@@ -105,6 +105,9 @@ def _reshape_surface_inputs(*args):
 #     return [np.reshape(a, target_shape) for a in args]
 
 def _cape_dummy(*args,**kwargs):
+    '''
+    This function is used in the test
+    '''
     p, t, td, ps, ts, tds = args
     # cape is a reduction along the second axis.
     # this tests that reshaping works.
@@ -260,9 +263,8 @@ def _calc_cape_numpy(*args,
                      adiabat='pseudo-liquid',pinc=500., method='fortran',
                      vertical_lev='sigma'):
     ''' 
-    Wrapper function for cape calculation to setup optional kwargs and ensure data is
-    is provided in a format suitable output to call either the fortran or numba implementations
-    of CAPE and CIN calculation. 
+    Wrapper function for cape calculation to setup optional kwargs and ensure data
+    is provided in a format suitable output to call CAPE and CIN calculation. 
     '''
 
  
@@ -277,7 +279,10 @@ def _calc_cape_numpy(*args,
         t_2d, td_2d = _reshape_inputs(t, td)
         p_2d = _reshape_inputs(p)[0]
         flag_1d = 1
-        # calculate pres_lev_pos
+        # calculate pres_lev_pos to use only levels where p_2d <= p_s1d
+        # in pressure level data, data are regridded and back-propagated
+        # for the whole vertical grid, even when surface pressure is lower than 
+        # the first level of the grid.
         temp_index = (p_s1d-p_2d)
         pres_lev_pos = np.ma.masked_less(temp_index,0).argmin(axis=0)
         # fortran convention
@@ -318,7 +323,7 @@ def _calc_cape_numpy(*args,
     else:
         raise ValueError('invalid method')
 
-    
+    # reshaping outputs
     if _source_options_[source]==2:
         cape, cin, mulev, zmulev = _reshape_outputs(cape_2d, cin_2d, mulev, zmulev, shape=original_shape)
         return cape, cin, mulev, zmulev
@@ -486,7 +491,10 @@ def _calc_srh_numpy(*args,
         t_2d, td_2d, u_2d, v_2d = _reshape_inputs(t, td, u, v)
         p_2d = _reshape_inputs(p)[0]
         flag_1d = 1
-        # calculate pres_lev_pos
+        # calculate pres_lev_pos to use only levels where p_2d <= p_s1d
+        # in pressure level data, data are regridded and back-propagated
+        # for the whole vertical grid, even when surface pressure is lower than 
+        # the first level of the grid.
         temp_index = (p_s1d-p_2d)
         pres_lev_pos = np.ma.masked_less(temp_index,0).argmin(axis=0)
         # fortran convention
