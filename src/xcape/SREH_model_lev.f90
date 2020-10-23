@@ -4,6 +4,26 @@
       SUBROUTINE loop_sreh_ml(u, v, aglh, us, vs, aglhs, &
                           &cu_rm, cv_rm, cu_lm, cv_lm, top, nk, n2, &
                           &sreh_rm, sreh_lm)
+!-----------------------------------------------------------------------
+!  loop_sreh_ml - loop along n2 dimension to calculate Storm Relative
+!            Helicity (SRH) for model/sigma level data
+!
+!  Author:  Chiara Lepore @chiaral
+!
+!  Disclaimer:  This code is made available WITHOUT WARRANTY.
+!-----------------------------------------------------------------------
+!  Input:
+!  nk = number of pressure levels
+!  n2 = number of grid point for which calculate CAPE
+!  u, v, us, vs = zonal and meridional winds (vertical and surface)
+!  aglh, aglhs = standard above ground height for vertical and surface levels
+!  cu_rm, cv_rm, cu_lm, cv_lm = zonal and meridional, right moving and 
+!                               left moving storm flow
+!  top = height for which srh is calculated
+!  Output:
+!  sreh_rm, sreh_lm = storm relative helicity right and left moving
+!-----------------------------------------------------------------------                          
+                          
       IMPLICIT NONE
 
       !f2py threadsafe
