@@ -52,13 +52,14 @@ def cape(p_2d, t_2d, td_2d, p_s, t_s, td_s, flag_1d, pres_lev_pos, source, ml_de
                                                       pinc, source, ml_depth, adiabat,
                                                       nlev, ngrid)
     elif type_grid == 2:
-        if flag_1d == 0:
-            CAPE, CIN, MUlev, zMUlev = CAPE_CODE_pressure_lev.loopcape_pl(p_2d, t_2d, td_2d,
-                                                              p_s, t_s, td_s,
-                                                              pinc, source, ml_depth, adiabat,
-                                                              pres_lev_pos,
-                                                              nlev, ngrid)
-        elif flag_1d == 1:
+        # this option should not be triggered because of what is in core.py
+#         if flag_1d == 0:
+#             CAPE, CIN, MUlev, zMUlev = CAPE_CODE_pressure_lev.loopcape_pl(p_2d, t_2d, td_2d,
+#                                                               p_s, t_s, td_s,
+#                                                               pinc, source, ml_depth, adiabat,
+#                                                               pres_lev_pos,
+#                                                               nlev, ngrid)
+        if flag_1d == 1:
             CAPE, CIN, MUlev, zMUlev = CAPE_CODE_pressure_lev.loopcape_pl1d(t_2d, td_2d, p_2d,
                                                               p_s, t_s, td_s,
                                                               pinc, source, ml_depth, adiabat,

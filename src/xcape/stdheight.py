@@ -22,11 +22,12 @@ def stdheight(p_2d, t_2d, td_2d, p_s, t_s, td_s, flag_1d, pres_lev_pos, aglh0, t
                                                       nlev, ngrid)
     elif type_grid == 2:
         from xcape import stdheight_2D_pressure_lev
-        if flag_1d ==0:
-            H2D, H_s  = stdheight_2D_pressure_lev.loop_stdheight_pl(p_2d, t_2d, td_2d,
-                                                      p_s, t_s, td_s,
-                                                      aglh_in,pres_lev_pos,
-                                                      nlev, ngrid)
+        # this option should not be triggered because of what is in core.py
+#         if flag_1d ==0:
+#             H2D, H_s  = stdheight_2D_pressure_lev.loop_stdheight_pl(p_2d, t_2d, td_2d,
+#                                                       p_s, t_s, td_s,
+#                                                       aglh_in,pres_lev_pos,
+#                                                       nlev, ngrid)
         if flag_1d ==1:
             H2D, H_s  = stdheight_2D_pressure_lev.loop_stdheight_pl1d(t_2d, td_2d, p_2d, 
                                                       p_s, t_s, td_s,

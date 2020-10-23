@@ -128,6 +128,7 @@ def test_calc_cape_pressure(dataset_ERA5pressurelevel, sourcein, pinc_used, ml_d
     if use_dask:
         ds3d = ds3d.chunk()
         dssurf = dssurf.chunk()
+    # here i use ds3d.level.data - which is 1D as it should be, I don't use the ds3d.p variable in fixture
     returns = calc_cape(ds3d.level.data,
                           ds3d.t.data,
                           ds3d.td.data,
