@@ -49,7 +49,7 @@ def test_calc_cape_shape_3d(p_t_td_3d, p_t_td_surface, sourcein, n_returns, use_
         args = (np.ones(t.shape[-1]), t, td, ps, ts, tds)
     if use_dask:
         args = [dsa.from_array(a) for a in args]
-    result = calc_cape(*args, source=sourcein,vertical_lev=vertical_levin, method='dummy')
+    result = calc_cape(*args, source=sourcein,vertical_lev=vertical_levin)
     assert len(result) == n_returns
     for data in result:
         assert data.shape == p.shape[:-1]
@@ -82,7 +82,7 @@ def test_calc_cape_sigma(dataset_soundings, sourcein, pinc_used, use_dask,vertic
                           ds.dewpoint.data[:, 0],
                           source=sourcein, ml_depth=500., adiabat='pseudo-liquid',
                           pinc=pinc_used,
-                          method='fortran', vertical_lev=vertical_levin)
+                          vertical_lev=vertical_levin)
 
     if sourcein=='most-unstable':
         cape = returns[0]
@@ -137,7 +137,6 @@ def test_calc_cape_pressure(dataset_ERA5pressurelevel, sourcein, pinc_used, ml_d
                           dssurf.td.data,
                           source=sourcein, ml_depth=ml_depthin, adiabat='pseudo-liquid',
                           pinc=pinc_used,
-                          method='fortran',
                         vertical_lev=vertical_levin)
 
     if sourcein=='most-unstable':
