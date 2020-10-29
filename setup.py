@@ -48,57 +48,29 @@ f90flags.append('-O3')
 #  Suppress all compiler warnings (avoid huge CI log files)
 f90flags.append('-w')
 
-ext_cape_ml = Extension(name = 'CAPE_CODE_model_lev',
-                        sources = ['src/xcape/CAPE_CODE_model_lev.pyf',
-                                   'src/xcape/CAPE_CODE_model_lev.f90'],
-                             extra_f90_compile_args=f90flags,
-                             f2py_options=['--quiet'])
-ext_cape_pl = Extension(name = 'CAPE_CODE_pressure_lev',
-                        sources = ['src/xcape/CAPE_CODE_pressure_lev.pyf',
-                                   'src/xcape/CAPE_CODE_pressure_lev.f90'],
-                             extra_f90_compile_args=f90flags,
-                             f2py_options=['--quiet'])
-ext_bunkers_ml = Extension(name = 'Bunkers_model_lev',
-                        sources = ['src/xcape/Bunkers_model_lev.pyf',
-                                   'src/xcape/Bunkers_model_lev.f90'],
-                             extra_f90_compile_args=f90flags,
-                             f2py_options=['--quiet'])
-ext_bunkers_pl = Extension(name = 'Bunkers_pressure_lev',
-                        sources = ['src/xcape/Bunkers_pressure_lev.pyf',
-                                   'src/xcape/Bunkers_pressure_lev.f90'],
-                             extra_f90_compile_args=f90flags,
-                             f2py_options=['--quiet'])
-ext_srh_ml = Extension(name = 'SREH_model_lev',
-                        sources = ['src/xcape/SREH_model_lev.pyf',
-                                   'src/xcape/SREH_model_lev.f90'],
-                             extra_f90_compile_args=f90flags,
-                             f2py_options=['--quiet'])
-ext_srh_pl = Extension(name = 'SREH_pressure_lev',
-                        sources = ['src/xcape/SREH_pressure_lev.pyf',
-                                   'src/xcape/SREH_pressure_lev.f90'],
-                             extra_f90_compile_args=f90flags,
-                             f2py_options=['--quiet'])
-ext_stdh_ml = Extension(name = 'stdheight_2D_model_lev',
-                        sources = ['src/xcape/stdheight_2D_model_lev.pyf',
-                                   'src/xcape/stdheight_2D_model_lev.f90'],
-                             extra_f90_compile_args=f90flags,
-                             f2py_options=['--quiet'])
-ext_stdh_pl = Extension(name = 'stdheight_2D_pressure_lev',
-                        sources = ['src/xcape/stdheight_2D_pressure_lev.pyf',
-                                   'src/xcape/stdheight_2D_pressure_lev.f90'],
-                             extra_f90_compile_args=f90flags,
-                             f2py_options=['--quiet'])
+
+extensions = [
+    'CAPE_CODE_model_lev', 'CAPE_CODE_pressure_lev', 'Bunkers_model_lev',
+    'Bunkers_pressure_lev', 'SREH_model_lev', 'SREH_pressure_lev',
+    'stdheight_2D_model_lev', 'stdheight_2D_pressure_lev'
+]
+
+def _mk_sources(name):
+    return [f'src/xcape/fortran/{name}.pyf',
+            f'src/xcape/fortran/{name}.f90']
+
+ext_modules = [Extension(name='fortran.' + name,
+                         sources=_mk_sources(name),
+                         extra_f90_compile_args=f90flags,
+                         f2py_options=['--quiet'])
+               for name in extensions]
+
 
 # https://github.com/readthedocs/readthedocs.org/issues/5512#issuecomment-475073310
 on_rtd = os.environ.get('READTHEDOCS') == 'True'
 if on_rtd:
     ext_modules = []
     INSTALL_REQUIRES = []
-else:
-    ext_modules = [ext_cape_ml, ext_cape_pl,
-                   ext_bunkers_ml, ext_bunkers_pl,
-                   ext_srh_ml, ext_srh_pl,
-                   ext_stdh_ml, ext_stdh_pl]
 
 setup(name=DISTNAME,
       version=versioneer.get_version(),
@@ -115,5 +87,5 @@ setup(name=DISTNAME,
       package_dir={"": "src"},
       packages=find_packages("src"),
       ext_package='xcape',
-      ext_modules = ext_modules
+      ext_modules=ext_modules
       )
