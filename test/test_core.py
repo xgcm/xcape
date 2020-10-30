@@ -81,10 +81,15 @@ def test_calc_cape_shape_3d(p_t_td_3d, p_t_td_surface, sourcein, n_returns, use_
 @pytest.mark.parametrize('use_dask', [False, True])
 @pytest.mark.parametrize('sourcein, n_returns',
                          [('surface', 2), ('most-unstable', 4)])
+@pytest.mark.parametrize('transpose', [True, False])
 @pytest.mark.parametrize('vertical_levin', ['sigma', 'pressure'])
-def test_calc_cape_shape_3d_xr(p_t_td_3d_xr, p_t_td_surface_xr, sourcein, n_returns, use_dask, vertical_levin):
+def test_calc_cape_shape_3d_xr(p_t_td_3d_xr, p_t_td_surface_xr, sourcein, n_returns,
+                               use_dask, vertical_levin, transpose):
     ds = p_t_td_3d_xr
     ds_surf = p_t_td_surface_xr
+    if transpose:
+        # make sure we can put lev on any axis
+        ds = ds.transpose('lev', 'lat', 'lon')
     if use_dask:
         ds = ds.chunk({'lat': 1})
         ds_surf = ds_surf.chunk({'lat': 1})
@@ -94,16 +99,20 @@ def test_calc_cape_shape_3d_xr(p_t_td_3d_xr, p_t_td_surface_xr, sourcein, n_retu
         args = (ds.lev, ds.t, ds.td, ds_surf.ps, ds_surf.ts, ds_surf.tds)
 
     result = calc_cape(*args, dim='lev', source=sourcein, vertical_lev=vertical_levin)
-    assert len(result) == n_returns
+
+    if n_returns == 2:
+        assert list(result) == ['CAPE', 'CIN']
+    else:
+        assert list(result) == ['CAPE', 'CIN', 'mulev', 'z_mulev']
 
     expected_dims = list(ds.t.dims).copy()
     expected_dims.remove('lev')
-    for da in result:
+    for vname in result:
+        da = result[vname]
         assert da.dims == tuple(expected_dims)
         if use_dask:
             assert isinstance(da.data, dsa.Array)
             da.compute()
-
 
 
 # tolerance for tests

@@ -9,6 +9,8 @@ import numpy as np
 import dask.array as da
 import xarray as xr
 
+from .metadata import cape_metadata
+
 # put this statement within try so that i don't import need to import
 # and compile the modules when I build the docs
 try:
@@ -120,11 +122,8 @@ def calc_cape(*args, **kwargs):
 
     """
 
-    if len(args)<6:
-        raise ValueError("Too few arguments.")
-
-    if len(args)>6:
-        raise ValueError("Too many arguments.")
+    if len(args) != 6:
+        raise ValueError(f"Six arguments are required, got {len(args)}.")
 
     allowed_vertical_levs = ['sigma', 'pressure']
     if kwargs['vertical_lev'] not in allowed_vertical_levs:
@@ -137,13 +136,24 @@ def calc_cape(*args, **kwargs):
         n_out = expected_args[kwargs['source']]
         output_core_dims =  n_out * [()]
         output_dtypes = n_out * [args[0].dtype]
-        return xr.apply_ufunc(_calc_cape_gufunc,
-                              *args,
-                              input_core_dims=input_core_dims,
-                              output_core_dims=output_core_dims,
-                              dask='allowed',
-                              kwargs=kwargs
-                              )
+        das = xr.apply_ufunc(_calc_cape_gufunc,
+                               *args,
+                               input_core_dims=input_core_dims,
+                               output_core_dims=output_core_dims,
+                               dask='allowed',
+                               kwargs=kwargs
+                               )
+        if n_out == 2:
+            vnames = ['CAPE', 'CIN']
+        elif n_out == 4:
+            vnames = ['CAPE', 'CIN', 'mulev', 'z_mulev']
+
+        ds = xr.merge([da.rename(name) for da, name in zip(das, vnames)])
+        metadata = cape_metadata(kwargs)
+        for v in ds:
+            ds[v].attrs = metadata[v]
+        return ds
+
     elif _any_dask_array(*args):
         return _calc_cape_gufunc(*args, **kwargs)
     else:
