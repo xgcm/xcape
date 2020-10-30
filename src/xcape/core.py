@@ -58,6 +58,9 @@ def calc_cape(*args, **kwargs):
         Surface Temperature in Celsius.
     tds : array-like
         Surface dew point temperature in Celsius.
+    dim : str, optional
+        Name of the dimension along which to apply cape calculation.
+        (Only applies to xarray inputs.)
     source : str, optional, default is 'surface'
         Select parcel based on desired assumptions under parcel theory
             - 'surface' = Surface-based parcels are subject to substantial errors depending on surface heating and source data, and can be influenced by moisture depth.
@@ -128,8 +131,19 @@ def calc_cape(*args, **kwargs):
         raise ValueError(f"`vertical_lev` must be one of: {allowed_vertical_levs}")
 
     if _any_xarray_da(*args):
+        vdim = kwargs.pop('dim')
+        input_core_dims = 3*[[vdim]] + 3*[[]]
+        expected_args = {'surface': 2, 'most-unstable': 4}
+        n_out = expected_args[kwargs['source']]
+        output_core_dims =  n_out * [()]
+        output_dtypes = n_out * [args[0].dtype]
         return xr.apply_ufunc(_calc_cape_gufunc,
-                              *args)
+                              *args,
+                              input_core_dims=input_core_dims,
+                              output_core_dims=output_core_dims,
+                              dask='allowed',
+                              kwargs=kwargs
+                              )
     elif _any_dask_array(*args):
         return _calc_cape_gufunc(*args, **kwargs)
     else:
