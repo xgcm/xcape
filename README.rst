@@ -1,7 +1,7 @@
 xcape: Fast convective parameters for numpy, dask, and xarray
 =============================================================
 
-|pypi| |conda forge| |Build Status| |codecov| |docs| |license|
+|pypi| |conda forge| |Build Status| |codecov| |docs| |license| |DOI|
 
 For more information, including installation instructions, read the full
 `xcape documentation <https://xcape.readthedocs.io/en/latest/>`_.
@@ -25,7 +25,9 @@ For more information, including installation instructions, read the full
 .. |license| image:: https://img.shields.io/github/license/mashape/apistatus.svg
    :target: https://github.com/xgcm/xcape
    :alt: license
-
+.. |DOI| image:: https://zenodo.org/badge/202226985.svg
+   :target: https://zenodo.org/badge/latestdoi/202226985
+   
 Funding Support
 ---------------
 
