@@ -16,3 +16,7 @@ version: v0.1.4
 date-released: 2021-07-26
 license: MIT
 repository-code: "https://github.com/xgcm/xcape"
+identifiers:
+  - description: Collection of all archived snapshots on Zenodo
+    type: doi
+    value: "10.5281/zenodo.5270332"
