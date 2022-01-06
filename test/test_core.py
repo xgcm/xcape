@@ -11,26 +11,46 @@ from .fixtures import empty_dask_array, dataset_soundings, dataset_ERA5pressurel
 
 import pytest
 
+
+def _random_data(*shape):
+    # p, t, td
+    return [np.random.rand(*shape),
+            np.random.rand(*shape),
+            np.random.rand(*shape)]
+
 @pytest.fixture(scope='module')
 def p_t_td_1d(nlevs=20):
-    p = np.random.rand(nlevs)
-    t = np.random.rand(nlevs)
-    td = np.random.rand(nlevs)
+    p, t, td = _random_data(nlevs)
     return p, t, td
 
 @pytest.fixture(scope='module')
 def p_t_td_3d(nlevs=20, nx=10, ny=5):
-    p = np.random.rand(ny, nx, nlevs)
-    t = np.random.rand(ny, nx, nlevs)
-    td = np.random.rand(ny, nx, nlevs)
+    p, t, td = _random_data(nx, ny, nlevs)
     return p, t, td
 
 @pytest.fixture(scope='module')
+def p_t_td_3d_xr(nlevs=20, nx=10, ny=5):
+    p, t, td = _random_data(nx, ny, nlevs)
+    dims = ['lat', 'lon', 'lev']
+    ds = xr.Dataset({'p': (dims, p),
+                     't': (dims, t),
+                     'td': (dims, td)})
+    return ds
+
+@pytest.fixture(scope='module')
 def p_t_td_surface(nx=10, ny=5):
-    ps = np.random.rand(ny, nx)
-    ts = np.random.rand(ny, nx)
-    tds = np.random.rand(ny, nx)
+    ps, ts, tds = _random_data(nx, ny)
     return ps, ts, tds
+
+
+@pytest.fixture(scope='module')
+def p_t_td_surface_xr(nx=10, ny=5):
+    ps, ts, tds = _random_data(nx, ny)
+    dims = ['lat', 'lon']
+    ds = xr.Dataset({'ps': (dims, ps),
+                     'ts': (dims, ts),
+                     'tds': (dims, tds)})
+    return ds
 
 # surface mode returns cape, cin
 # most-unstable mode returns cape, cin, mulev, zmulev
@@ -49,13 +69,50 @@ def test_calc_cape_shape_3d(p_t_td_3d, p_t_td_surface, sourcein, n_returns, use_
         args = (np.ones(t.shape[-1]), t, td, ps, ts, tds)
     if use_dask:
         args = [dsa.from_array(a) for a in args]
-    result = calc_cape(*args, source=sourcein,vertical_lev=vertical_levin, method='dummy')
+    result = calc_cape(*args, source=sourcein,vertical_lev=vertical_levin)
     assert len(result) == n_returns
     for data in result:
         assert data.shape == p.shape[:-1]
         if use_dask:
             assert isinstance(data, dsa.Array)
             data.compute()
+
+
+@pytest.mark.parametrize('use_dask', [False, True])
+@pytest.mark.parametrize('sourcein, n_returns',
+                         [('surface', 2), ('most-unstable', 4)])
+@pytest.mark.parametrize('transpose', [True, False])
+@pytest.mark.parametrize('vertical_levin', ['sigma', 'pressure'])
+def test_calc_cape_shape_3d_xr(p_t_td_3d_xr, p_t_td_surface_xr, sourcein, n_returns,
+                               use_dask, vertical_levin, transpose):
+    ds = p_t_td_3d_xr
+    ds_surf = p_t_td_surface_xr
+    if transpose:
+        # make sure we can put lev on any axis
+        ds = ds.transpose('lev', 'lat', 'lon')
+    if use_dask:
+        ds = ds.chunk({'lat': 1})
+        ds_surf = ds_surf.chunk({'lat': 1})
+    if vertical_levin=='sigma':
+        args = (ds.p, ds.t, ds.td, ds_surf.ps, ds_surf.ts, ds_surf.tds)
+    elif vertical_levin =='pressure':
+        args = (ds.lev, ds.t, ds.td, ds_surf.ps, ds_surf.ts, ds_surf.tds)
+
+    result = calc_cape(*args, dim='lev', source=sourcein, vertical_lev=vertical_levin)
+
+    if n_returns == 2:
+        assert list(result) == ['CAPE', 'CIN']
+    else:
+        assert list(result) == ['CAPE', 'CIN', 'mulev', 'z_mulev']
+
+    expected_dims = list(ds.t.dims).copy()
+    expected_dims.remove('lev')
+    for vname in result:
+        da = result[vname]
+        assert da.dims == tuple(expected_dims)
+        if use_dask:
+            assert isinstance(da.data, dsa.Array)
+            da.compute()
 
 
 # tolerance for tests
@@ -82,7 +139,7 @@ def test_calc_cape_sigma(dataset_soundings, sourcein, pinc_used, use_dask,vertic
                           ds.dewpoint.data[:, 0],
                           source=sourcein, ml_depth=500., adiabat='pseudo-liquid',
                           pinc=pinc_used,
-                          method='fortran', vertical_lev=vertical_levin)
+                          vertical_lev=vertical_levin)
 
     if sourcein=='most-unstable':
         cape = returns[0]
@@ -137,7 +194,6 @@ def test_calc_cape_pressure(dataset_ERA5pressurelevel, sourcein, pinc_used, ml_d
                           dssurf.td.data,
                           source=sourcein, ml_depth=ml_depthin, adiabat='pseudo-liquid',
                           pinc=pinc_used,
-                          method='fortran',
                         vertical_lev=vertical_levin)
 
     if sourcein=='most-unstable':
